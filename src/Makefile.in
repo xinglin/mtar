@@ -238,7 +238,7 @@ am_tar_OBJECTS = buffer.$(OBJEXT) checkpoint.$(OBJEXT) \
 	names.$(OBJEXT) sparse.$(OBJEXT) suffix.$(OBJEXT) \
 	system.$(OBJEXT) tar.$(OBJEXT) transform.$(OBJEXT) \
 	unlink.$(OBJEXT) update.$(OBJEXT) utf8.$(OBJEXT) \
-	warning.$(OBJEXT) xattrs.$(OBJEXT)
+	warning.$(OBJEXT) xattrs.$(OBJEXT) migrate.$(OBJEEXT)
 tar_OBJECTS = $(am_tar_OBJECTS)
 am__DEPENDENCIES_1 =
 am__DEPENDENCIES_2 = ../lib/libtar.a ../gnu/libgnu.a \
@@ -1187,6 +1187,7 @@ tar_SOURCES = \
  delete.c\
  exit.c\
  extract.c\
+ migrate.c\
  xheader.c\
  incremen.c\
  list.c\
@@ -1317,6 +1318,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/delete.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/exit.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/extract.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/migrate.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/incremen.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/list.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/misc.Po@am__quote@
