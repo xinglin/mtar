@@ -233,12 +233,12 @@ am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_tar_OBJECTS = buffer.$(OBJEXT) checkpoint.$(OBJEXT) \
 	compare.$(OBJEXT) create.$(OBJEXT) delete.$(OBJEXT) \
-	exit.$(OBJEXT) extract.$(OBJEXT) xheader.$(OBJEXT) \
+	exit.$(OBJEXT) extract.$(OBJEXT) migrate.$(OBJEXT) xheader.$(OBJEXT) \
 	incremen.$(OBJEXT) list.$(OBJEXT) misc.$(OBJEXT) \
 	names.$(OBJEXT) sparse.$(OBJEXT) suffix.$(OBJEXT) \
 	system.$(OBJEXT) tar.$(OBJEXT) transform.$(OBJEXT) \
 	unlink.$(OBJEXT) update.$(OBJEXT) utf8.$(OBJEXT) \
-	warning.$(OBJEXT) xattrs.$(OBJEXT) migrate.$(OBJEEXT)
+	warning.$(OBJEXT) xattrs.$(OBJEXT)
 tar_OBJECTS = $(am_tar_OBJECTS)
 am__DEPENDENCIES_1 =
 am__DEPENDENCIES_2 = ../lib/libtar.a ../gnu/libgnu.a \
