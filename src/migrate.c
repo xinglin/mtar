@@ -870,7 +870,13 @@ is_directory_link (const char *file_name)
   errno = e;
   return res;
 }
-
+
+static int
+migrate_dir (char *filename, int typeflag)
+{
+  return 0;
+}
+
 /* Extractor functions for various member types */
 
 static int
@@ -1066,7 +1072,7 @@ migrate_file (char *file_name, int typeflag)
   off_t size;
   union block *data_block;
   int status;
-  size_t count;
+  size_t count = 0;
   size_t written;
   bool interdir_made = false;
   mode_t mode = (current_stat_info.stat.st_mode & MODE_RWX
@@ -1099,9 +1105,9 @@ migrate_file (char *file_name, int typeflag)
 	  written = size;
 	
         if (verbose_option) {
-	  fprintf(stdlis, ".");
-	  fflush(stdlis);
-	}
+          fprintf(stdlis, ".");
+          fflush(stdlis);
+        }
 	
 	count ++;
 	size -= written;
@@ -1109,6 +1115,11 @@ migrate_file (char *file_name, int typeflag)
 	set_next_block_after ((union block *)
 			      (data_block->buffer + written - 1));
       }
+
+  if (verbose_option) {
+    fprintf(stdlis, "\n");
+    fflush(stdlis);
+  }
 
   fprintf(stdlis, "%s: %ld blocks\n", file_name, count);
   fflush(stdlis);
@@ -1454,7 +1465,7 @@ prepare_to_migrate (char const *file_name, int typeflag, tar_extractor_t *fun)
 
     case DIRTYPE:
     case GNUTYPE_DUMPDIR:
-      *fun = extract_dir;
+      *fun = migrate_dir;
       if (current_stat_info.is_dumpdir)
 	delay_directory_restore_option = true;
       break;

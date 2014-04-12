@@ -407,6 +407,8 @@ static struct argp_option options[] = {
   {"extract", 'x', 0, 0,
    N_("extract files from an archive"), GRID+1 },
   {"get", 0, 0, OPTION_ALIAS, NULL, GRID+1 },
+  {"migrate", 'e', 0, 0,
+   N_("migrate file header blocks together for an archive"), GRID+1 },
   {"create", 'c', 0, 0,
    N_("create a new archive"), GRID+1 },
   {"diff", 'd', 0, 0,
@@ -975,7 +977,7 @@ set_subcommand_option (enum subcommand subcommand)
   if (subcommand_option != UNKNOWN_SUBCOMMAND
       && subcommand_option != subcommand)
     USAGE_ERROR ((0, 0,
-		  _("You may not specify more than one '-Acdtrux', '--delete' or  '--test-label' option")));
+		  _("You may not specify more than one '-Acdtruxe', '--delete' or  '--test-label' option")));
 
   subcommand_option = subcommand;
 }
@@ -1361,6 +1363,10 @@ parse_opt (int key, char *arg, struct argp_state *state)
 
     case 'd':
       set_subcommand_option (DIFF_SUBCOMMAND);
+      break;
+
+    case 'e':
+      set_subcommand_option (MIGRATE_SUBCOMMAND);
       break;
 
     case 'f':
@@ -2215,6 +2221,7 @@ static int subcommand_class[] = {
   /* EXTRACT_SUBCOMMAND */     SUBCL_READ|SUBCL_OCCUR,
   /* LIST_SUBCOMMAND    */     SUBCL_READ|SUBCL_OCCUR,
   /* UPDATE_SUBCOMMAND  */     SUBCL_WRITE|SUBCL_UPDATE,
+  /* MIGRATE_SUBCOMMAND    */  SUBCL_READ|SUBCL_OCCUR,
   /* TEST_LABEL_SUBCOMMAND */  SUBCL_TEST
 };
 
@@ -2657,7 +2664,7 @@ main (int argc, char **argv)
     {
     case UNKNOWN_SUBCOMMAND:
       USAGE_ERROR ((0, 0,
-		    _("You must specify one of the '-Acdtrux', '--delete' or '--test-label' options")));
+		    _("You must specify one of the '-Acdtruxe', '--delete' or '--test-label' options")));
 
     case CAT_SUBCOMMAND:
     case UPDATE_SUBCOMMAND:
@@ -2682,7 +2689,10 @@ main (int argc, char **argv)
       extract_finish ();
 
       break;
-
+    case MIGRATE_SUBCOMMAND:
+      read_and (migrate_archive);
+      break;
+      
     case LIST_SUBCOMMAND:
       read_and (list_archive);
       break;

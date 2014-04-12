@@ -91,6 +91,7 @@ enum subcommand
   EXTRACT_SUBCOMMAND,		/* -x */
   LIST_SUBCOMMAND,		/* -t */
   UPDATE_SUBCOMMAND,		/* -u */
+  MIGRATE_SUBCOMMAND,		/* -e */
   TEST_LABEL_SUBCOMMAND,        /* --test-label */
 };
 
@@ -510,6 +511,9 @@ void extr_init (void);
 void extract_archive (void);
 void extract_finish (void);
 bool rename_directory (char *src, char *dst);
+
+/* Module migrate.c.  */
+void migrate_archive (void);
 
 /* Module delete.c.  */
 
