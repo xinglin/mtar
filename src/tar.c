@@ -2690,7 +2690,9 @@ main (int argc, char **argv)
 
       break;
     case MIGRATE_SUBCOMMAND:
+      migrate_init (); 
       read_and (migrate_archive);
+      migrate_finish ();
       break;
       
     case LIST_SUBCOMMAND:

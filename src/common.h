@@ -513,7 +513,9 @@ void extract_finish (void);
 bool rename_directory (char *src, char *dst);
 
 /* Module migrate.c.  */
+void migrate_init (void);
 void migrate_archive (void);
+void migrate_finish (void);
 
 /* Module delete.c.  */
 

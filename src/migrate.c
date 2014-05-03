@@ -33,6 +33,12 @@
 static bool we_are_root;	/* true if our effective uid == 0 */
 static mode_t newdir_umask;	/* umask when creating new directories */
 static mode_t current_umask;	/* current umask (which is set to 0 if -p) */
+static int fd_header;			/*  File descriptor for header blocks. */
+static int fd_content;			/*  File descriptor for content blocks. */
+
+#define HEADER_POSTFIX "h"		/* postfix for the header block temporary file */
+#define CONTENT_POSTFIX "c"		/* postfix for the content block temporary file */
+#define MIGRATE_POSTFIX "m"		/* postfix for the archive file migrated */
 
 #define ALL_MODE_BITS ((mode_t) ~ (mode_t) 0)
 
@@ -172,10 +178,11 @@ struct string_list
     char string[1];
   };
 
-/*  Set up to extract files.  */
+/*  Set up to migrate an archive.  */
 void
 migrate_init (void)
 {
+  char headerfile[NAME_MAX], contentfile[NAME_MAX];
   we_are_root = geteuid () == ROOT_UID;
   same_permissions_option += we_are_root;
   same_owner_option += we_are_root;
@@ -192,6 +199,26 @@ migrate_init (void)
       umask (newdir_umask);	/* restore the kernel umask */
       current_umask = newdir_umask;
     }
+  
+  /* open file descriptors for header and content files. */
+  sprintf(headerfile, "%s.%s", archive_name_array[0], HEADER_POSTFIX);
+  sprintf(contentfile, "%s.%s", archive_name_array[0], CONTENT_POSTFIX);  
+  fprintf(stdlis, "headerfile=%s\n contentfile=%s\n",
+	headerfile, contentfile);  
+  fd_header = rmtopen (headerfile, O_RDWR | O_CREAT | O_BINARY, 
+		MODE_RW, rsh_command_option);
+  if (fd_header < 0)
+    open_fatal(headerfile);
+  fd_content = rmtopen (contentfile, O_RDWR | O_CREAT | O_BINARY, 
+		MODE_RW, rsh_command_option);
+  if (fd_content < 0)
+    open_fatal(contentfile);
+}
+
+/*  Finish a migration of an archive file */
+void
+migrate_finish(void)
+{
 }
 
 /* Use fchmod if possible, fchmodat otherwise.  */
