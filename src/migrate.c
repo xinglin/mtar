@@ -203,7 +203,7 @@ migrate_init (void)
   /* Open file descriptors for header and content files */
   sprintf(headerfile, "%s.%s", archive_name_array[0], HEADER_POSTFIX);
   sprintf(contentfile, "%s.%s", archive_name_array[0], CONTENT_POSTFIX);  
-  fprintf(stdlis, "headerfile=%s\n contentfile=%s\n",
+  fprintf(stdlis, "  headerfile=%s\n  contentfile=%s\n",
 	headerfile, contentfile);  
   fd_header = rmtopen (headerfile, O_RDWR | O_CREAT | O_BINARY, 
 		MODE_RW, rsh_command_option);
@@ -1104,16 +1104,9 @@ migrate_file (char *file_name, int typeflag)
   off_t size;
   union block *data_block;
   int status;
+  unsigned long blocknum = 0;
   size_t count = 0;
   size_t written;
-  bool interdir_made = false;
-  mode_t mode = (current_stat_info.stat.st_mode & MODE_RWX
-		 & ~ (0 < same_owner_option ? S_IRWXG | S_IRWXO : 0));
-  mode_t invert_permissions = 0 < same_owner_option ? mode & (S_IRWXG | S_IRWXO)
-                                                    : 0;
-  mode_t current_mode = 0;
-  mode_t current_mode_mask = 0;
-
 
   mv_begin_read (&current_stat_info);
   for (size = current_stat_info.stat.st_size; size > 0; )
@@ -1135,17 +1128,24 @@ migrate_file (char *file_name, int typeflag)
 
 	if (written > size)
 	  written = size;
-	
-        if (verbose_option) {
-          fprintf(stdlis, ".");
-          fflush(stdlis);
-        }
-	
-	count ++;
+	errno = 0;
+	count = blocking_write (fd_content, data_block->buffer, written);
+	blocknum ++;
 	size -= written;
 
+	if (verbose_option) {
+	  fprintf(stdlis, ".");
+	  fflush(stdlis);
+        }
+	
 	set_next_block_after ((union block *)
 			      (data_block->buffer + written - 1));
+	if (count != written)
+	  {
+	     if (!to_command_option)
+	       write_error_details (file_name, count, written);
+	     break;  	  
+	  }
       }
 
   if (verbose_option) {
@@ -1153,7 +1153,7 @@ migrate_file (char *file_name, int typeflag)
     fflush(stdlis);
   }
 
-  fprintf(stdlis, "%s: %ld blocks\n", file_name, count);
+  fprintf(stdlis, "%s: %ld blocks\n", file_name, blocknum);
   fflush(stdlis);
   skip_file (size);
 
@@ -1567,6 +1567,7 @@ migrate_archive (void)
 {
   char typeflag;
   tar_extractor_t fun;
+  size_t count = 0;
 
   set_next_block_after (current_header);
 
@@ -1581,7 +1582,12 @@ migrate_archive (void)
   /* Print the block from current_header and current_stat.  */
   if (verbose_option)
     print_header (&current_stat_info, current_header, -1);
-
+  /* Write header block for this file.  */  
+  count = blocking_write (fd_header, current_header->buffer, BLOCKSIZE);
+  if (count != BLOCKSIZE)
+    {
+        write_error_details(current_stat_info.file_name, count, BLOCKSIZE);
+    }
 
   /* Extract the archive entry according to its type.  */
   /* KLUDGE */
