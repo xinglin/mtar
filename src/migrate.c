@@ -29,7 +29,7 @@
 #include <utimens.h>
 
 #include "common.h"
-
+#include <rmt.h>
 static bool we_are_root;	/* true if our effective uid == 0 */
 static mode_t newdir_umask;	/* umask when creating new directories */
 static mode_t current_umask;	/* current umask (which is set to 0 if -p) */
@@ -200,7 +200,7 @@ migrate_init (void)
       current_umask = newdir_umask;
     }
   
-  /* open file descriptors for header and content files. */
+  /* Open file descriptors for header and content files */
   sprintf(headerfile, "%s.%s", archive_name_array[0], HEADER_POSTFIX);
   sprintf(contentfile, "%s.%s", archive_name_array[0], CONTENT_POSTFIX);  
   fprintf(stdlis, "headerfile=%s\n contentfile=%s\n",
@@ -219,6 +219,11 @@ migrate_init (void)
 void
 migrate_finish(void)
 {
+  /* Close file descriptors for header and content files */
+  if (rmtclose (fd_header) != 0)
+    close_error("header file descriptor close");
+  if (rmtclose (fd_content) != 0)
+    close_error("content file descriptor close");
 }
 
 /* Use fchmod if possible, fchmodat otherwise.  */
