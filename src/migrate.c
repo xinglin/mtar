@@ -35,6 +35,7 @@ static mode_t newdir_umask;	/* umask when creating new directories */
 static mode_t current_umask;	/* current umask (which is set to 0 if -p) */
 static int fd_header;			/*  File descriptor for header blocks. */
 static int fd_content;			/*  File descriptor for content blocks. */
+static unsigned long long blocksum;	/*  Total content blocks. */
 
 #define HEADER_POSTFIX "h"		/* postfix for the header block temporary file */
 #define CONTENT_POSTFIX "c"		/* postfix for the content block temporary file */
@@ -213,6 +214,7 @@ migrate_init (void)
 		MODE_RW, rsh_command_option);
   if (fd_content < 0)
     open_fatal(contentfile);
+  blocksum = 0;  
 }
 
 /*  Finish a migration of an archive file */
@@ -224,6 +226,8 @@ migrate_finish(void)
     close_error("header file descriptor close");
   if (rmtclose (fd_content) != 0)
     close_error("content file descriptor close");
+  fprintf(stdlis, "migrate_finish: blocksum=%llu\n", blocksum);
+  fflush(stdlis);
 }
 
 /* Use fchmod if possible, fchmodat otherwise.  */
@@ -1127,16 +1131,16 @@ migrate_file (char *file_name, int typeflag)
 	written = available_space_after (data_block);
 
 	if (written > size)
-	  written = size;
+	  {
+	    written = size;
+	    /* Write a complete block */  
+	    written = ((written + BLOCKSIZE-1)/BLOCKSIZE)*BLOCKSIZE;
+	  }
 	errno = 0;
 	count = blocking_write (fd_content, data_block->buffer, written);
 	blocknum ++;
+	blocksum ++;
 	size -= written;
-
-	if (verbose_option) {
-	  fprintf(stdlis, ".");
-	  fflush(stdlis);
-        }
 	
 	set_next_block_after ((union block *)
 			      (data_block->buffer + written - 1));
@@ -1148,14 +1152,13 @@ migrate_file (char *file_name, int typeflag)
 	  }
       }
 
-  if (verbose_option) {
-    fprintf(stdlis, "\n");
-    fflush(stdlis);
-  }
-
-  fprintf(stdlis, "%s: %ld blocks\n", file_name, blocknum);
+  fprintf(stdlis, "%s blocknum=%lu\n", file_name, blocknum);
   fflush(stdlis);
-  skip_file (size);
+  if (size > 0) 
+    {
+      fprintf(stdlis, "migrate_file: file=%s skipbytes=%lu", file_name, size);
+      fflush(stdlis);    
+    }    
 
   mv_end ();
   return status;
