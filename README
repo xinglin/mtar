@@ -1,3 +1,10 @@
+=================================================================================
+How to use it?
+  - Download vanilla tar 1.27.1 from gnu website
+  - Apply patch to vanilla tar 
+  - Compile
+=================================================================================
+
 README for GNU tar
 See the end of file for copying conditions.
 
