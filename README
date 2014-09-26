@@ -1,9 +1,16 @@
-=================================================================================
+================================================================================
 How to use it?
   - Download vanilla tar 1.27.1 from gnu website
   - Apply patch to vanilla tar 
   - Compile
-=================================================================================
+
+migrate.c is based on extract.c implementation. It is invoked
+in the same way as --list. 
+
+   $ /usr/local/bin/tar --migrate -f tar-1.27.1.tar
+   $ /usr/local/bin/tar -e -f tar-1.27.1.tar
+
+================================================================================
 
 README for GNU tar
 See the end of file for copying conditions.
