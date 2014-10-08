@@ -30,6 +30,7 @@
 
 #include "common.h"
 #include <rmt.h>
+#include <stdio.h>
 static bool we_are_root;	/* true if our effective uid == 0 */
 static mode_t newdir_umask;	/* umask when creating new directories */
 static mode_t current_umask;	/* current umask (which is set to 0 if -p) */
@@ -205,9 +206,13 @@ migrate_init (void)
   /* Open file descriptors for header and content files */
   sprintf(headerfile, "%s.%s", archive_name_array[0], HEADER_POSTFIX);
   sprintf(contentfile, "%s.%s", archive_name_array[0], CONTENT_POSTFIX);
-  fprintf(stdlis, "migrate_init:\n");  
-  fprintf(stdlis, "  headerfile=%s\n  contentfile=%s\n",
+  if (verbose_option) 
+    {
+      fprintf(stdlis, "migrate_init:\n");  
+      fprintf(stdlis, "  headerfile=%s\n  contentfile=%s\n",
 	headerfile, contentfile);  
+    }
+
   fd_header = rmtopen (headerfile, O_RDWR | O_CREAT | O_BINARY, 
 		MODE_RW, rsh_command_option);
   if (fd_header < 0)
@@ -286,6 +291,7 @@ void create_migratory_tar(void)
 void
 migrate_finish(void)
 {
+  char headerfile[NAME_MAX], contentfile[NAME_MAX];
   /* Close file descriptors for header and content files */
   if (rmtclose (fd_header) != 0)
     close_error("header file descriptor close");
@@ -297,6 +303,11 @@ migrate_finish(void)
   fflush(stdlis);
 
   create_migratory_tar();
+
+  sprintf(headerfile, "%s.%s", archive_name_array[0], HEADER_POSTFIX);
+  remove(headerfile);
+  sprintf(contentfile, "%s.%s", archive_name_array[0], CONTENT_POSTFIX);
+  remove(contentfile);
 }
 
 /* Use fchmod if possible, fchmodat otherwise.  */
