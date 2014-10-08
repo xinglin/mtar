@@ -10,6 +10,14 @@ in the same way as --list.
    $ /usr/local/bin/tar --migrate -f tar-1.27.1.tar
    $ /usr/local/bin/tar -e -f tar-1.27.1.tar
 
+NOTE:
+  * blocking-factor: tar writes output in records. Each record is blocking-factor * BLOCKSIZE. By default, 
+    blocking-factor is 10. To get an accurate size comparison between migrated tar and tar, we can set 
+    blocking-factor to be 1 and then the difference between migrated tar and normal tar will be 1024 bytes (
+    tar ends with two 512 blocks). 
+
+   $ tar c -b 1 -f test.tar test
+ 
 ================================================================================
 
 README for GNU tar
