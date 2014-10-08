@@ -1151,9 +1151,11 @@ migrate_file (char *file_name, int typeflag)
 	     break;  	  
 	  }
       }
-
-  fprintf(stdlis, "%s blocknum=%lu\n", file_name, blocknum);
-  fflush(stdlis);
+  
+  if (verbose_option){
+  	fprintf(stdlis, "%s blocknum=%lu\n", file_name, blocknum);
+  	fflush(stdlis);
+  }
   if (size > 0) 
     {
       fprintf(stdlis, "migrate_file: file=%s skipbytes=%lu", file_name, size);
@@ -1583,8 +1585,8 @@ migrate_archive (void)
     }
 
   /* Print the block from current_header and current_stat.  */
-  if (verbose_option)
-    print_header (&current_stat_info, current_header, -1);
+  // if (verbose_option)
+  //  print_header (&current_stat_info, current_header, -1);
   /* Write header block for this file.  */  
   count = blocking_write (fd_header, current_header->buffer, BLOCKSIZE);
   if (count != BLOCKSIZE)
