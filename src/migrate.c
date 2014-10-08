@@ -36,6 +36,7 @@ static mode_t current_umask;	/* current umask (which is set to 0 if -p) */
 static int fd_header;			/*  File descriptor for header blocks. */
 static int fd_content;			/*  File descriptor for content blocks. */
 static unsigned long long blocksum;	/*  Total content blocks. */
+static unsigned long long headernum;    /*  Number of header blocks in a tar file. */
 
 #define HEADER_POSTFIX "h"		/* postfix for the header block temporary file */
 #define CONTENT_POSTFIX "c"		/* postfix for the content block temporary file */
@@ -203,7 +204,8 @@ migrate_init (void)
   
   /* Open file descriptors for header and content files */
   sprintf(headerfile, "%s.%s", archive_name_array[0], HEADER_POSTFIX);
-  sprintf(contentfile, "%s.%s", archive_name_array[0], CONTENT_POSTFIX);  
+  sprintf(contentfile, "%s.%s", archive_name_array[0], CONTENT_POSTFIX);
+  fprintf(stdlis, "migrate_init:\n");  
   fprintf(stdlis, "  headerfile=%s\n  contentfile=%s\n",
 	headerfile, contentfile);  
   fd_header = rmtopen (headerfile, O_RDWR | O_CREAT | O_BINARY, 
@@ -214,7 +216,8 @@ migrate_init (void)
 		MODE_RW, rsh_command_option);
   if (fd_content < 0)
     open_fatal(contentfile);
-  blocksum = 0;  
+  blocksum = 0;
+  headernum = 0;
 }
 
 /*  Finish a migration of an archive file */
@@ -226,7 +229,9 @@ migrate_finish(void)
     close_error("header file descriptor close");
   if (rmtclose (fd_content) != 0)
     close_error("content file descriptor close");
-  fprintf(stdlis, "migrate_finish: blocksum=%llu\n", blocksum);
+  fprintf(stdlis, "migrate_finish: \n");
+  fprintf(stdlis, "  blocksum=%llu\n", blocksum);
+  fprintf(stdlis, "  headernum=%llu\n", headernum);
   fflush(stdlis);
 }
 
@@ -1593,6 +1598,7 @@ migrate_archive (void)
     {
         write_error_details(current_stat_info.file_name, count, BLOCKSIZE);
     }
+  headernum ++;
 
   /* Extract the archive entry according to its type.  */
   /* KLUDGE */
