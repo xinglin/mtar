@@ -40,7 +40,7 @@ static unsigned long long headernum;    /*  Number of header blocks in a tar fil
 
 #define HEADER_POSTFIX "h"		/* postfix for the header block temporary file */
 #define CONTENT_POSTFIX "c"		/* postfix for the content block temporary file */
-#define MIGRATE_POSTFIX "m"		/* postfix for the archive file migrated */
+#define MIGRATORY_POSTFIX "m"		/* postfix for the archive file migrated */
 
 #define ALL_MODE_BITS ((mode_t) ~ (mode_t) 0)
 
@@ -220,6 +220,29 @@ migrate_init (void)
   headernum = 0;
 }
 
+void create_migratory_tar(void)
+{
+  char migratoryfile[NAME_MAX];
+  sprintf(migratoryfile, "%s.%s", archive_name_array[0], MIGRATORY_POSTFIX);
+  int fd = rmtopen (migratoryfile, O_RDWR | O_CREAT | O_BINARY, 
+		MODE_RW, rsh_command_option);
+  if (fd < 0)
+    open_fatal(migratoryfile);
+
+  union block *migratory_header = xmalloc(BLOCKSIZE);
+  migratory_header->migratory_header.headernum = headernum;
+
+  int count = blocking_write (fd, migratory_header->buffer, BLOCKSIZE);
+  if (count != BLOCKSIZE)
+    write_error_details(migratoryfile, count, BLOCKSIZE);
+   
+  free(migratory_header);
+
+
+  // close migratory tar file
+  if (rmtclose (fd) != 0 )
+    close_error("migratory tar file close");
+}
 /*  Finish a migration of an archive file */
 void
 migrate_finish(void)
@@ -233,6 +256,8 @@ migrate_finish(void)
   fprintf(stdlis, "  blocksum=%llu\n", blocksum);
   fprintf(stdlis, "  headernum=%llu\n", headernum);
   fflush(stdlis);
+
+  create_migratory_tar();  
 }
 
 /* Use fchmod if possible, fchmodat otherwise.  */

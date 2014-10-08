@@ -129,6 +129,11 @@ struct sparse_header
 				/* 505 */
 };
 
+struct migratory_header 
+{
+  unsigned long long headernum;
+};
+
 /* The old GNU format header conflicts with POSIX format in such a way that
    POSIX archives may fool old GNU tar's, and POSIX tar's might well be
    fooled by old GNU tar archives.  An old GNU format header uses the space
@@ -257,9 +262,10 @@ enum archive_format
   USTAR_FORMAT,                 /* POSIX.1-1988 (ustar) format */
   POSIX_FORMAT,			/* POSIX.1-2001 format */
   STAR_FORMAT,                  /* Star format defined in 1994 */
-  GNU_FORMAT			/* Same as OLDGNU_FORMAT with one exception:
+  GNU_FORMAT,			/* Same as OLDGNU_FORMAT with one exception:
                                    see FIXME note for to_chars() function
                                    (create.c:189) */
+  MIGRATORY_FORMAT		/* Migratory TAR */
 };
 
 /* Information about a sparse file.  */
@@ -369,4 +375,5 @@ union block
   struct sparse_header sparse_header;
   struct star_in_header star_in_header;
   struct star_ext_header star_ext_header;
+  struct migratory_header migratory_header;
 };
