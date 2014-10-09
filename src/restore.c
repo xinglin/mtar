@@ -223,10 +223,17 @@ restore_init (void)
       current_umask = newdir_umask;
     }
   
+  /* open input file */
   inputfd = rmtopen (migratoryfile, O_RDONLY | O_BINARY,
 		MODE_RW, rsh_command_option);
   if (inputfd < 0)
     open_fatal(migratoryfile);
+
+  /* open output file */
+  outputfd = rmtopen (filename, O_RDWR | O_CREAT | O_BINARY,
+		MODE_RW, rsh_command_option);
+  if (outputfd < 0)
+    open_fatal(filename);
 
   union block *migratoryheader = xmalloc(BLOCKSIZE);
   int count = blocking_read(inputfd, migratoryheader, BLOCKSIZE);
@@ -287,6 +294,9 @@ restore_finish(void)
 
   if (rmtclose (inputfd) != 0)
     close_error("input file close");
+  if (rmtclose (outputfd) != 0)
+    close_error("output file close");
+
 }
 
 /* Use fchmod if possible, fchmodat otherwise.  */
