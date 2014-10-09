@@ -129,6 +129,7 @@ struct sparse_header
 				/* 505 */
 };
 
+# define MIGRATORY_HEADER_BLOCK_NUM 2 /* number of migratory header blocks that are at the beginning of a migratory tar file */
 struct migratory_header 
 {
   unsigned long long headernum;		/* number of header blocks */
