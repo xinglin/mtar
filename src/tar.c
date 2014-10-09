@@ -2703,6 +2703,9 @@ main (int argc, char **argv)
       break;
       
     case RESTORE_SUBCOMMAND:
+    	restore_init ();
+    	read_and (restore_archive);
+    	restore_finish ();
     	break;
 
     case LIST_SUBCOMMAND:

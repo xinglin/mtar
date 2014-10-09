@@ -518,6 +518,11 @@ void migrate_init (void);
 void migrate_archive (void);
 void migrate_finish (void);
 
+/* Module restore.c  */
+void restore_init (void);
+void restore_archive (void);
+void restore_finish (void);
+
 /* Module delete.c.  */
 
 void delete_archive_members (void);

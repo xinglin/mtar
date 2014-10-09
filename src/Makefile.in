@@ -233,7 +233,7 @@ am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_tar_OBJECTS = buffer.$(OBJEXT) checkpoint.$(OBJEXT) \
 	compare.$(OBJEXT) create.$(OBJEXT) delete.$(OBJEXT) \
-	exit.$(OBJEXT) extract.$(OBJEXT) migrate.$(OBJEXT) xheader.$(OBJEXT) \
+	exit.$(OBJEXT) extract.$(OBJEXT) migrate.$(OBJEXT) restore.$(OBJEXT) xheader.$(OBJEXT) \
 	incremen.$(OBJEXT) list.$(OBJEXT) misc.$(OBJEXT) \
 	names.$(OBJEXT) sparse.$(OBJEXT) suffix.$(OBJEXT) \
 	system.$(OBJEXT) tar.$(OBJEXT) transform.$(OBJEXT) \
@@ -1188,6 +1188,7 @@ tar_SOURCES = \
  exit.c\
  extract.c\
  migrate.c\
+ restore.c\
  xheader.c\
  incremen.c\
  list.c\
@@ -1319,6 +1320,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/exit.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/extract.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/migrate.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/restore.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/incremen.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/list.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/misc.Po@am__quote@
