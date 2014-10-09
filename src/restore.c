@@ -223,13 +223,13 @@ restore_init (void)
       current_umask = newdir_umask;
     }
   
-  int fd = rmtopen (migratoryfile, O_RDONLY | O_BINARY,
+  inputfd = rmtopen (migratoryfile, O_RDONLY | O_BINARY,
 		MODE_RW, rsh_command_option);
-  if (fd < 0)
+  if (inputfd < 0)
     open_fatal(migratoryfile);
 
   union block *migratoryheader = xmalloc(BLOCKSIZE);
-  int count = blocking_read(fd, migratoryheader, BLOCKSIZE);
+  int count = blocking_read(inputfd, migratoryheader, BLOCKSIZE);
   if (count != BLOCKSIZE)
 	  read_error_details(migratoryfile, 0, BLOCKSIZE);
 
@@ -242,8 +242,11 @@ restore_init (void)
   fflush(stdlis);
 
   free(migratoryheader);
-  if (rmtclose (fd) != 0)
-    close_error("input file close");
+
+  /* seek to the start offset of data blocks */
+  off_t datablockoffset = BLOCKSIZE * (headernum + MIGRATORY_HEADER_BLOCK_NUM);
+  if (rmtlseek(inputfd, datablockoffset, SEEK_SET) != datablockoffset)
+	  seek_error_details(migratoryfile, datablockoffset);
 }
 
 /* copy all data in the input file, into output fd. */
@@ -281,6 +284,9 @@ restore_finish(void)
   fprintf(stdlis, "  data blocks  : %llu\n", blocksum);
   fprintf(stdlis, "  header blocks: %llu\n", headernum);
   fflush(stdlis);
+
+  if (rmtclose (inputfd) != 0)
+    close_error("input file close");
 }
 
 /* Use fchmod if possible, fchmodat otherwise.  */
