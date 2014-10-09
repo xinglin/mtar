@@ -264,12 +264,12 @@ void create_migratory_tar(void)
   union block *migratory_header = xmalloc(BLOCKSIZE);
   migratory_header->migratory_header.headernum = headernum;
 
-  int count = blocking_write (fd, migratory_header->buffer, BLOCKSIZE);
+  int count = blocking_write (fd, migratory_header, BLOCKSIZE);
   if (count != BLOCKSIZE)
     write_error_details(migratoryfile, count, BLOCKSIZE);
 
   /* write two blocks, to get the same size as normal tar... */
-  count = blocking_write (fd, migratory_header->buffer, BLOCKSIZE);
+  count = blocking_write (fd, migratory_header, BLOCKSIZE);
   if (count != BLOCKSIZE)
     write_error_details(migratoryfile, count, BLOCKSIZE);
    
