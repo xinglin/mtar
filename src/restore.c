@@ -216,7 +216,7 @@ restore_init (void)
   fprintf(stdlis, "  header blocks: %llu\n", migratoryheader->migratory_header.headernum);
   fflush(stdlis);
   blocksum = 0;
-  headernum = 0;
+  headernum = migratoryheader->migratory_header.headernum;
 }
 
 /* copy all data in the input file, into output fd. */

@@ -131,7 +131,8 @@ struct sparse_header
 
 struct migratory_header 
 {
-  unsigned long long headernum;
+  unsigned long long headernum;		/* number of header blocks */
+  unsigned long long blocksum;		/* number of data blocks */
 };
 
 /* The old GNU format header conflicts with POSIX format in such a way that

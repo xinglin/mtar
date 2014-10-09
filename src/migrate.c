@@ -263,6 +263,7 @@ void create_migratory_tar(void)
 
   union block *migratory_header = xmalloc(BLOCKSIZE);
   migratory_header->migratory_header.headernum = headernum;
+  migratory_header->migratory_header.blocksum = blocksum;
 
   int count = blocking_write (fd, migratory_header, BLOCKSIZE);
   if (count != BLOCKSIZE)
