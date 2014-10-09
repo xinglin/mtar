@@ -1206,20 +1206,22 @@ restore_file (char *file_name, int typeflag)
 		readbytes = record_size;
 		if (readbytes > size)
 			readbytes = size;
+		readbytes = ((readbytes + BLOCKSIZE -1)/BLOCKSIZE)*BLOCKSIZE;
+
 		count = rmtread (inputfd, record, readbytes);
 		if (count == 0)
 		{
 			ERROR ((0, 0, _("Unexpected EOF in archive")));
 			break;		/* FIXME: What happens, then?  */
 		}
-		if (count < 0)
+		if (count < 0 || count != readbytes)
 		{
 			ERROR ((0, 0, _("Read error in archive")));
 			break;		/* FIXME: What happens, then?  */
 		}
 
 		/* Write a complete block */
-		written = ((count + BLOCKSIZE-1)/BLOCKSIZE)*BLOCKSIZE;
+		written = count;
 		count = rmtwrite (outputfd, record, written);
 		blocknum += count/BLOCKSIZE;
 
