@@ -146,6 +146,16 @@ read_and (void (*do_something) (void))
   name_gather ();
 
   open_archive (ACCESS_READ);
+
+  // skip the first two migratory header blocks for restore
+  if (subcommand_option == RESTORE_SUBCOMMAND) {
+	  int i = 0;
+	  union block *header = find_next_block ();
+	  set_next_block_after(header);
+	  header = find_next_block();
+	  set_next_block_after(header);
+  }
+
   do
     {
       prev_status = status;
