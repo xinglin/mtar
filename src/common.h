@@ -92,6 +92,7 @@ enum subcommand
   LIST_SUBCOMMAND,		/* -t */
   UPDATE_SUBCOMMAND,		/* -u */
   MIGRATE_SUBCOMMAND,		/* -e */
+  RESTORE_SUBCOMMAND,		/* -E */
   TEST_LABEL_SUBCOMMAND,        /* --test-label */
 };
 

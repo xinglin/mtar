@@ -409,6 +409,8 @@ static struct argp_option options[] = {
   {"get", 0, 0, OPTION_ALIAS, NULL, GRID+1 },
   {"migrate", 'e', 0, 0,
    N_("migrate file header blocks together for an archive"), GRID+1 },
+   {"restore", 'E', 0, 0,
+      N_("Restore a migratory tar file to be a regular tar file"), GRID+1 },
   {"create", 'c', 0, 0,
    N_("create a new archive"), GRID+1 },
   {"diff", 'd', 0, 0,
@@ -1369,6 +1371,10 @@ parse_opt (int key, char *arg, struct argp_state *state)
       set_subcommand_option (MIGRATE_SUBCOMMAND);
       break;
 
+    case 'E':
+      set_subcommand_option (RESTORE_SUBCOMMAND);
+      break;
+
     case 'f':
       if (archive_names == allocated_archive_names)
 	archive_name_array = x2nrealloc (archive_name_array,
@@ -2222,6 +2228,7 @@ static int subcommand_class[] = {
   /* LIST_SUBCOMMAND    */     SUBCL_READ|SUBCL_OCCUR,
   /* UPDATE_SUBCOMMAND  */     SUBCL_WRITE|SUBCL_UPDATE,
   /* MIGRATE_SUBCOMMAND    */  SUBCL_READ|SUBCL_OCCUR,
+  /* RESTORE_SUBCOMMAND    */  SUBCL_READ|SUBCL_OCCUR,
   /* TEST_LABEL_SUBCOMMAND */  SUBCL_TEST
 };
 
@@ -2695,6 +2702,9 @@ main (int argc, char **argv)
       migrate_finish ();
       break;
       
+    case RESTORE_SUBCOMMAND:
+    	break;
+
     case LIST_SUBCOMMAND:
       read_and (list_archive);
       break;
