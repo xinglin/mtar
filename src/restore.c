@@ -184,7 +184,7 @@ struct string_list
 void
 restore_init (void)
 {
-  char headerfile[NAME_MAX], contentfile[NAME_MAX];
+  char *migratoryfile = archive_name_array[0];
   we_are_root = geteuid () == ROOT_UID;
   same_permissions_option += we_are_root;
   same_owner_option += we_are_root;
@@ -202,24 +202,19 @@ restore_init (void)
       current_umask = newdir_umask;
     }
   
-  /* Open file descriptors for header and content files */
-  sprintf(headerfile, "%s.%s", archive_name_array[0], HEADER_POSTFIX);
-  sprintf(contentfile, "%s.%s", archive_name_array[0], CONTENT_POSTFIX);
-  if (verbose_option) 
-    {
-      fprintf(stdlis, "migrate_init:\n");  
-      fprintf(stdlis, "  headerfile=%s\n  contentfile=%s\n",
-	headerfile, contentfile);  
-    }
+  int fd = rmtopen (migratoryfile, O_RDONLY | O_BINARY,
+		MODE_RW, rsh_command_option);
+  if (fd < 0)
+    open_fatal(migratoryfile);
 
-  fd_header = rmtopen (headerfile, O_RDWR | O_CREAT | O_BINARY, 
-		MODE_RW, rsh_command_option);
-  if (fd_header < 0)
-    open_fatal(headerfile);
-  fd_content = rmtopen (contentfile, O_RDWR | O_CREAT | O_BINARY, 
-		MODE_RW, rsh_command_option);
-  if (fd_content < 0)
-    open_fatal(contentfile);
+  union block *migratoryheader = xmalloc(BLOCKSIZE);
+  int count = blocking_read(fd, migratoryheader, BLOCKSIZE);
+  if (count != BLOCKSIZE)
+	  read_error_details(migratoryfile, 0, BLOCKSIZE);
+
+  fprintf(stdlis, "restore_init\n");
+  fprintf(stdlis, "  header blocks: %llu\n", migratoryheader->migratory_header.headernum);
+  fflush(stdlis);
   blocksum = 0;
   headernum = 0;
 }
