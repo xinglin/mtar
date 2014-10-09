@@ -184,7 +184,12 @@ struct string_list
 void
 restore_init (void)
 {
-  char *migratoryfile = archive_name_array[0];
+  const char *migratoryfile = archive_name_array[0];
+  if (migratoryfile == NULL || (strcmp (migratoryfile, "-") == 0)) {
+	  ERROR ((0, 0, _("does not support stdin as input")));
+	  return;
+  }
+
   we_are_root = geteuid () == ROOT_UID;
   same_permissions_option += we_are_root;
   same_owner_option += we_are_root;
@@ -215,8 +220,11 @@ restore_init (void)
   fprintf(stdlis, "restore_init\n");
   fprintf(stdlis, "  header blocks: %llu\n", migratoryheader->migratory_header.headernum);
   fflush(stdlis);
-  blocksum = 0;
+  blocksum = migratoryheader->migratory_header.blocksum;
   headernum = migratoryheader->migratory_header.headernum;
+  free(migratoryheader);
+  if (rmtclose (fd) != 0)
+    close_error("input file close");
 }
 
 /* copy all data in the input file, into output fd. */
@@ -250,23 +258,10 @@ static void copy_data(char input[NAME_MAX], int outputfd, unsigned long long blo
 void
 restore_finish(void)
 {
-  char headerfile[NAME_MAX], contentfile[NAME_MAX];
-  /* Close file descriptors for header and content files */
-  if (rmtclose (fd_header) != 0)
-    close_error("header file descriptor close");
-  if (rmtclose (fd_content) != 0)
-    close_error("content file descriptor close");
-  fprintf(stdlis, "migrate_finish: \n");
+  fprintf(stdlis, "restore_finish: \n");
   fprintf(stdlis, "  data blocks  : %llu\n", blocksum);
   fprintf(stdlis, "  header blocks: %llu\n", headernum);
   fflush(stdlis);
-
-  create_migratory_tar();
-
-  sprintf(headerfile, "%s.%s", archive_name_array[0], HEADER_POSTFIX);
-  remove(headerfile);
-  sprintf(contentfile, "%s.%s", archive_name_array[0], CONTENT_POSTFIX);
-  remove(contentfile);
 }
 
 /* Use fchmod if possible, fchmodat otherwise.  */
