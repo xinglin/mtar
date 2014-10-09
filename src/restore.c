@@ -292,6 +292,17 @@ restore_finish(void)
   fprintf(stdlis, "  header blocks: %llu\n", headernum);
   fflush(stdlis);
 
+  /* write two zero blocks as the end of tar */
+  union block * block = xmalloc(BLOCKSIZE);
+  memset(block->buffer, 0, BLOCKSIZE);
+  int writtenbytes = 0;
+  for(int i = 0; i < MIGRATORY_HEADER_BLOCK_NUM; i++) {
+	  if ( (writtenbytes = blocking_write (outputfd, block->buffer, BLOCKSIZE)) != BLOCKSIZE)
+		  write_error_details("outputfile", writtenbytes, BLOCKSIZE);
+  }
+  free(block);
+
+  /* close input and output */
   if (rmtclose (inputfd) != 0)
     close_error("input file close");
   if (rmtclose (outputfd) != 0)
@@ -1173,68 +1184,65 @@ open_output_file (char const *file_name, int typeflag, mode_t mode,
 static int
 restore_file (char *file_name, int typeflag)
 {
-  int fd;
-  off_t size;
-  union block *data_block;
-  int status;
-  unsigned long blocknum = 0;
-  size_t count = 0;
-  size_t written;
+	off_t size;
+	union block *data_block = xmalloc(BLOCKSIZE);
+	int status = 0;
+	unsigned long blocknum = 0;
+	size_t count = 0;
+	size_t written;
 
-  fprintf(stdlis, "%s: %" PRIu64 "\n", file_name, current_stat_info.stat.st_size);
-  return 0;
-  mv_begin_read (&current_stat_info);
-  for (size = current_stat_info.stat.st_size; size > 0; )
-      {
-	mv_size_left (size);
+	if (verbose_option >= 2)
+		fprintf(stdlis, "%s: %" PRIu64 "\n", file_name, current_stat_info.stat.st_size);
 
-	/* Locate data, determine max length writeable, write it,
+	mv_begin_read (&current_stat_info);
+	for (size = current_stat_info.stat.st_size; size > 0; )
+	{
+		mv_size_left (size);
+
+		/* Locate data, determine max length writeable, write it,
 	   block that we have used the data, then check if the write
 	   worked.  */
+		memset(data_block->buffer, 0, BLOCKSIZE);
+		count = blocking_read (inputfd, data_block->buffer, BLOCKSIZE);
+		if (count <= 0)
+		{
+			ERROR ((0, 0, _("Unexpected EOF or read error in archive")));
+			break;		/* FIXME: What happens, then?  */
+		}
 
-	data_block = find_next_block ();
-	if (! data_block)
-	  {
-	    ERROR ((0, 0, _("Unexpected EOF in archive")));
-	    break;		/* FIXME: What happens, then?  */
-	  }
+		written = available_space_after (data_block);
 
-	written = available_space_after (data_block);
+		if (written > size)
+		{
+			written = size;
+			/* Write a complete block */
+			written = ((written + BLOCKSIZE-1)/BLOCKSIZE)*BLOCKSIZE;
+		}
+		errno = 0;
+		count = blocking_write (outputfd, data_block->buffer, written);
+		blocknum += count/BLOCKSIZE;
+		size -= written;
 
-	if (written > size)
-	  {
-	    written = size;
-	    /* Write a complete block */  
-	    written = ((written + BLOCKSIZE-1)/BLOCKSIZE)*BLOCKSIZE;
-	  }
-	errno = 0;
-	//count = blocking_write (outputfd, data_block->buffer, written);
-	blocknum += count/BLOCKSIZE;
-	blocksum += count/BLOCKSIZE;
-	size -= written;
-	
-	set_next_block_after ((union block *)
-			      (data_block->buffer + written - 1));
-	if (count != written)
-	  {
-	     if (!to_command_option)
-	       write_error_details (file_name, count, written);
-	     break;  	  
-	  }
-      }
-  
-  if (verbose_option){
-  	fprintf(stdlis, "%s blocknum=%lu\n", file_name, blocknum);
-  	fflush(stdlis);
-  }
-  if (size > 0) 
-    {
-      fprintf(stdlis, "migrate_file: file=%s skipbytes=%lu", file_name, size);
-      fflush(stdlis);    
-    }    
+		if (count != written)
+		{
+			if (!to_command_option)
+				write_error_details (file_name, count, written);
+			break;
+		}
+	} // for loop ends here
 
-  mv_end ();
-  return status;
+	if (verbose_option){
+		fprintf(stdlis, "%s blocknum=%lu\n", file_name, blocknum);
+		fflush(stdlis);
+	}
+	if (size > 0)
+	{
+		fprintf(stdlis, "restore_file: file=%s skipbytes=%lu", file_name, size);
+		fflush(stdlis);
+	}
+	free(data_block);
+	mv_end ();
+	return status;
 }
 
 /* Create a placeholder file with name FILE_NAME, which will be
@@ -1641,36 +1649,42 @@ prepare_to_restore (char const *file_name, int typeflag, tar_extractor_t *fun)
 void
 restore_archive (void)
 {
-  char typeflag;
-  tar_extractor_t fun;
-  size_t count = 0;
+	char typeflag;
+	tar_extractor_t fun;
+	size_t count = 0;
 
-  set_next_block_after (current_header);
+	set_next_block_after (current_header);
 
-  if (!current_stat_info.file_name[0]
-      || (interactive_option
-	  && !confirm ("extract", current_stat_info.file_name)))
-    {
-      skip_member ();
-      return;
-    }
+	if (!current_stat_info.file_name[0]
+									 || (interactive_option
+											 && !confirm ("extract", current_stat_info.file_name)))
+	{
+		skip_member ();
+		return;
+	}
 
-  /* Print the block from current_header and current_stat.  */
-   if (verbose_option)
-    print_header (&current_stat_info, current_header, -1);
+	/* Print the block from current_header and current_stat.  */
+	if (verbose_option)
+		print_header (&current_stat_info, current_header, -1);
+	/* Write header block for this file.  */
+	count = blocking_write (outputfd, current_header->buffer, BLOCKSIZE);
+	if (count != BLOCKSIZE)
+	{
+		write_error_details("outputfile", count, BLOCKSIZE);
+	}
 
-  /* Extract the archive entry according to its type.  */
-  /* KLUDGE */
-  typeflag = sparse_member_p (&current_stat_info) ?
-                  GNUTYPE_SPARSE : current_header->header.typeflag;
+	/* Extract the archive entry according to its type.  */
+	/* KLUDGE */
+	typeflag = sparse_member_p (&current_stat_info) ?
+			GNUTYPE_SPARSE : current_header->header.typeflag;
 
-  if (prepare_to_restore (current_stat_info.file_name, typeflag, &fun))
-    {
-      if (fun && (*fun) (current_stat_info.file_name, typeflag))
-        ERROR ((0, 0, _("Migrate_archive() failed for file %s"), current_stat_info.file_name));
-    }
-  else
-    skip_member ();
+	if (prepare_to_restore (current_stat_info.file_name, typeflag, &fun))
+	{
+		if (fun && (*fun) (current_stat_info.file_name, typeflag))
+			ERROR ((0, 0, _("Migrate_archive() failed for file %s"), current_stat_info.file_name));
+	}
+	else
+		skip_member ();
 
 }
 
