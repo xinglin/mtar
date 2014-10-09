@@ -30,11 +30,11 @@
 #include "common.h"
 #include <rmt.h>
 #include <stdio.h>
+#include <string.h>
 static bool we_are_root;	/* true if our effective uid == 0 */
 static mode_t newdir_umask;	/* umask when creating new directories */
 static mode_t current_umask;	/* current umask (which is set to 0 if -p) */
-static int fd_header;			/*  File descriptor for header blocks. */
-static int fd_content;			/*  File descriptor for content blocks. */
+static int outputfd;			/*  File descriptor for the output file. */
 static unsigned long long blocksum;	/*  Total content blocks. */
 static unsigned long long headernum;    /*  Number of header blocks in a tar file. */
 
@@ -180,15 +180,30 @@ struct string_list
     char string[1];
   };
 
+void getfilenameandpostfix(const char *filepath, char filename[NAME_MAX], char postfix[NAME_MAX])
+{
+	if (filepath == NULL)
+		return;
+
+	memset(filename, 0, NAME_MAX);
+	memset(postfix, 0, NAME_MAX);
+	const char *ext = strrchr(filepath, '.');
+	memcpy(filename, filepath, (int) (ext - filepath));
+	memcpy(postfix, ext+1, filepath + strlen(filepath) - (ext+1));
+}
 /*  Set up to restore an archive.  */
 void
 restore_init (void)
 {
   const char *migratoryfile = archive_name_array[0];
+  char filename[NAME_MAX], postfix[NAME_MAX];
+
   if (migratoryfile == NULL || (strcmp (migratoryfile, "-") == 0)) {
 	  ERROR ((0, 0, _("does not support stdin as input")));
 	  return;
   }
+
+  getfilenameandpostfix(migratoryfile, filename, postfix);
 
   we_are_root = geteuid () == ROOT_UID;
   same_permissions_option += we_are_root;
@@ -217,11 +232,14 @@ restore_init (void)
   if (count != BLOCKSIZE)
 	  read_error_details(migratoryfile, 0, BLOCKSIZE);
 
-  fprintf(stdlis, "restore_init\n");
-  fprintf(stdlis, "  header blocks: %llu\n", migratoryheader->migratory_header.headernum);
-  fflush(stdlis);
   blocksum = migratoryheader->migratory_header.blocksum;
   headernum = migratoryheader->migratory_header.headernum;
+  fprintf(stdlis, "restore_init\n");
+  fprintf(stdlis, "  tar file: %s\n", filename);
+  fprintf(stdlis, "  header blocks: %llu\n", headernum);
+  fprintf(stdlis, "  data blocks  : %llu\n", blocksum);
+  fflush(stdlis);
+
   free(migratoryheader);
   if (rmtclose (fd) != 0)
     close_error("input file close");
@@ -1146,6 +1164,8 @@ restore_file (char *file_name, int typeflag)
   size_t count = 0;
   size_t written;
 
+  fprintf(stdlis, "%s: %" PRIu64 "\n", file_name, current_stat_info.stat.st_size);
+
   mv_begin_read (&current_stat_info);
   for (size = current_stat_info.stat.st_size; size > 0; )
       {
@@ -1171,7 +1191,7 @@ restore_file (char *file_name, int typeflag)
 	    written = ((written + BLOCKSIZE-1)/BLOCKSIZE)*BLOCKSIZE;
 	  }
 	errno = 0;
-	count = blocking_write (fd_content, data_block->buffer, written);
+	//count = blocking_write (outputfd, data_block->buffer, written);
 	blocknum += count/BLOCKSIZE;
 	blocksum += count/BLOCKSIZE;
 	size -= written;
@@ -1619,15 +1639,8 @@ restore_archive (void)
     }
 
   /* Print the block from current_header and current_stat.  */
-  // if (verbose_option)
-  //  print_header (&current_stat_info, current_header, -1);
-  /* Write header block for this file.  */  
-  count = blocking_write (fd_header, current_header->buffer, BLOCKSIZE);
-  if (count != BLOCKSIZE)
-    {
-        write_error_details(current_stat_info.file_name, count, BLOCKSIZE);
-    }
-  headernum ++;
+   if (verbose_option)
+    print_header (&current_stat_info, current_header, -1);
 
   /* Extract the archive entry according to its type.  */
   /* KLUDGE */
