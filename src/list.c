@@ -33,6 +33,8 @@ union block *recent_long_link;	/* likewise, for long link */
 size_t recent_long_name_blocks;	/* number of blocks in recent_long_name */
 size_t recent_long_link_blocks;	/* likewise, for long link */
 static union block *recent_global_header; /* Recent global header block */
+extern unsigned long long headernum;    /*  Number of header blocks in a tar file. */
+
 
 #define GID_FROM_HEADER(where) gid_from_header (where, sizeof (where))
 #define MAJOR_FROM_HEADER(where) major_from_header (where, sizeof (where))
@@ -141,6 +143,7 @@ read_and (void (*do_something) (void))
   enum read_header status = HEADER_STILL_UNREAD;
   enum read_header prev_status;
   struct timespec mtime;
+  unsigned long long headercounter = 0;
 
   base64_init ();
   name_gather ();
@@ -149,6 +152,7 @@ read_and (void (*do_something) (void))
 
   // skip the first two migratory header blocks for restore
   if (subcommand_option == RESTORE_SUBCOMMAND) {
+	  fprintf(stdlis, "read_and: headernum=%llu\n", headernum);
 	  int i = 0;
 	  union block *header = find_next_block ();
 	  set_next_block_after(header);
@@ -158,11 +162,16 @@ read_and (void (*do_something) (void))
 
   do
     {
+      if(subcommand_option == RESTORE_SUBCOMMAND && headercounter >= headernum)
+    	  break;
+
       prev_status = status;
       tar_stat_destroy (&current_stat_info);
 
       status = read_header (&current_header, &current_stat_info,
                             read_header_auto);
+      headercounter ++;
+
       switch (status)
 	{
 	case HEADER_STILL_UNREAD:

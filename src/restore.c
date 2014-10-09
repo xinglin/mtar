@@ -35,8 +35,9 @@ static bool we_are_root;	/* true if our effective uid == 0 */
 static mode_t newdir_umask;	/* umask when creating new directories */
 static mode_t current_umask;	/* current umask (which is set to 0 if -p) */
 static int outputfd;			/*  File descriptor for the output file. */
+static int inputfd;				/*  file descriptor for the input file */
 static unsigned long long blocksum;	/*  Total content blocks. */
-static unsigned long long headernum;    /*  Number of header blocks in a tar file. */
+unsigned long long headernum;    /*  Number of header blocks in a tar file. */
 
 #define HEADER_POSTFIX "h"		/* postfix for the header block temporary file */
 #define CONTENT_POSTFIX "c"		/* postfix for the content block temporary file */
@@ -1165,7 +1166,7 @@ restore_file (char *file_name, int typeflag)
   size_t written;
 
   fprintf(stdlis, "%s: %" PRIu64 "\n", file_name, current_stat_info.stat.st_size);
-
+  return 0;
   mv_begin_read (&current_stat_info);
   for (size = current_stat_info.stat.st_size; size > 0; )
       {
