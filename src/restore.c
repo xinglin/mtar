@@ -1185,11 +1185,11 @@ static int
 restore_file (char *file_name, int typeflag)
 {
 	off_t size;
-	union block *data_block = xmalloc(BLOCKSIZE);
+	char *record = xmalloc(record_size);
 	int status = 0;
 	unsigned long blocknum = 0;
 	size_t count = 0;
-	size_t written;
+	size_t written, readbytes;
 
 	if (verbose_option >= 2)
 		fprintf(stdlis, "%s: %" PRIu64 "\n", file_name, current_stat_info.stat.st_size);
@@ -1197,31 +1197,31 @@ restore_file (char *file_name, int typeflag)
 	mv_begin_read (&current_stat_info);
 	for (size = current_stat_info.stat.st_size; size > 0; )
 	{
-		mv_size_left (size);
-
 		/* Locate data, determine max length writeable, write it,
 	   block that we have used the data, then check if the write
 	   worked.  */
-		memset(data_block->buffer, 0, BLOCKSIZE);
-		count = blocking_read (inputfd, data_block->buffer, BLOCKSIZE);
-		if (count <= 0)
+		memset(record, 0, record_size);
+
+		/* read at most size bytes */
+		readbytes = record_size;
+		if (readbytes > size)
+			readbytes = size;
+		count = rmtread (inputfd, record, readbytes);
+		if (count == 0)
 		{
-			ERROR ((0, 0, _("Unexpected EOF or read error in archive")));
+			ERROR ((0, 0, _("Unexpected EOF in archive")));
+			break;		/* FIXME: What happens, then?  */
+		}
+		if (count < 0)
+		{
+			ERROR ((0, 0, _("Read error in archive")));
 			break;		/* FIXME: What happens, then?  */
 		}
 
-		written = available_space_after (data_block);
-
-		if (written > size)
-		{
-			written = size;
-			/* Write a complete block */
-			written = ((written + BLOCKSIZE-1)/BLOCKSIZE)*BLOCKSIZE;
-		}
-		errno = 0;
-		count = blocking_write (outputfd, data_block->buffer, written);
+		/* Write a complete block */
+		written = ((count + BLOCKSIZE-1)/BLOCKSIZE)*BLOCKSIZE;
+		count = rmtwrite (outputfd, record, written);
 		blocknum += count/BLOCKSIZE;
-		size -= written;
 
 		if (count != written)
 		{
@@ -1229,6 +1229,9 @@ restore_file (char *file_name, int typeflag)
 				write_error_details (file_name, count, written);
 			break;
 		}
+
+		size -= written;
+
 	} // for loop ends here
 
 	if (verbose_option){
@@ -1240,7 +1243,7 @@ restore_file (char *file_name, int typeflag)
 		fprintf(stdlis, "restore_file: file=%s skipbytes=%lu", file_name, size);
 		fflush(stdlis);
 	}
-	free(data_block);
+	free(record);
 	mv_end ();
 	return status;
 }
