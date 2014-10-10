@@ -999,6 +999,7 @@ migrate_dir (char *filename, int typeflag)
 static int
 extract_dir (char *file_name, int typeflag)
 {
+	fprintf(stdlis, "extract_dir: file=%s\n", file_name);
   int status;
   mode_t mode;
   mode_t current_mode = 0;
@@ -1333,6 +1334,9 @@ create_placeholder_file (char *file_name, bool is_symlink, bool *interdir_made)
 static int
 extract_link (char *file_name, int typeflag)
 {
+  if (verbose_option > 3)
+	fprintf(stdlis, "extract_link: file=%s\n", file_name);
+
   bool interdir_made = false;
   char const *link_name;
   int rc;
@@ -1397,6 +1401,10 @@ extract_link (char *file_name, int typeflag)
 static int
 extract_symlink (char *file_name, int typeflag)
 {
+	if (verbose_option > 3)
+		fprintf(stdlis, "extract_symlink: file=%s\n", file_name);
+	return 0;
+
 #ifdef HAVE_SYMLINK
   bool interdir_made = false;
 
@@ -1441,6 +1449,9 @@ extract_symlink (char *file_name, int typeflag)
 static int
 extract_node (char *file_name, int typeflag)
 {
+  if (verbose_option > 3)
+	fprintf(stdlis, "extract_node: file=%s\n", file_name);
+
   bool interdir_made = false;
   mode_t mode = (current_stat_info.stat.st_mode & (MODE_RWX | S_IFBLK | S_IFCHR)
 		 & ~ (0 < same_owner_option ? S_IRWXG | S_IRWXO : 0));
@@ -1471,6 +1482,8 @@ extract_node (char *file_name, int typeflag)
 static int
 extract_fifo (char *file_name, int typeflag)
 {
+  if (verbose_option > 3)
+	fprintf(stdlis, "extract_fifo: file=%s\n", file_name);
   bool interdir_made = false;
   mode_t mode = (current_stat_info.stat.st_mode & MODE_RWX
 		 & ~ (0 < same_owner_option ? S_IRWXG | S_IRWXO : 0));
@@ -1499,6 +1512,8 @@ extract_fifo (char *file_name, int typeflag)
 static int
 extract_volhdr (char *file_name, int typeflag)
 {
+  if (verbose_option > 3)
+	fprintf(stdlis, "extract_volhdr: file=%s\n", file_name);
   skip_member ();
   return 0;
 }
@@ -1506,12 +1521,16 @@ extract_volhdr (char *file_name, int typeflag)
 static int
 extract_failure (char *file_name, int typeflag)
 {
+  if (verbose_option > 3)
+	fprintf(stdlis, "extract_failure: file=%s\n", file_name);
   return 1;
 }
 
 static int
 extract_skip (char *file_name, int typeflag)
 {
+  if (verbose_option > 3)
+	fprintf(stdlis, "extract_skip: file=%s\n", file_name);
   skip_member ();
   return 0;
 }
@@ -1701,7 +1720,7 @@ apply_delayed_links (void)
     {
       struct string_list *sources = ds->sources;
       char const *valid_source = 0;
-
+      fprintf(stdlis, "apply_delayed_links: src=%s, target=%s\n", sources->string, ds->target);
       chdir_do (ds->change_dir);
 
       for (sources = ds->sources; sources; sources = sources->next)
