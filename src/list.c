@@ -33,8 +33,10 @@ union block *recent_long_link;	/* likewise, for long link */
 size_t recent_long_name_blocks;	/* number of blocks in recent_long_name */
 size_t recent_long_link_blocks;	/* likewise, for long link */
 static union block *recent_global_header; /* Recent global header block */
-extern unsigned long long headernum;    /*  Number of header blocks in a tar file. */
-
+extern unsigned long long headernum;		/* Number of header blocks in a tar file.
+											/* defined in restore.c and used for determining when to stop read_and() */
+extern int fd_header;	/* file descriptor for writing header blocks */
+						/* defined in migrate.c, to write LONGLINK/LONGNAME header blocks */
 
 #define GID_FROM_HEADER(where) gid_from_header (where, sizeof (where))
 #define MAJOR_FROM_HEADER(where) major_from_header (where, sizeof (where))
@@ -441,12 +443,13 @@ read_header (union block **return_block, struct tar_stat_info *info,
 	  else if (header->header.typeflag == GNUTYPE_LONGNAME
 		   || header->header.typeflag == GNUTYPE_LONGLINK)
 	    {
+		  fprintf(stdlis, "%s\n", header->header.typeflag == GNUTYPE_LONGNAME? "GNULONGNAME" : "GNULONGLINK");
 	      size_t name_size = info->stat.st_size;
 	      size_t n = name_size % BLOCKSIZE;
 	      size = name_size + BLOCKSIZE;
 	      if (n)
 		size += BLOCKSIZE - n;
-
+	      fprintf(stdlis, "long_name/link_blocks: %zu\n", size / BLOCKSIZE);
 	      if (name_size != info->stat.st_size || size < name_size)
 		xalloc_die ();
 
