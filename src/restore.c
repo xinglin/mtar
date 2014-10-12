@@ -37,7 +37,6 @@ static mode_t current_umask;	/* current umask (which is set to 0 if -p) */
 static int outputfd;			/*  File descriptor for the output file. */
 static int inputfd;				/*  file descriptor for the input file */
 static unsigned long long blocksum;	/*  Total content blocks. */
-unsigned long long headernum;    /*  Number of header blocks in a tar file. */
 
 #define HEADER_POSTFIX "h"		/* postfix for the header block temporary file */
 #define CONTENT_POSTFIX "c"		/* postfix for the content block temporary file */

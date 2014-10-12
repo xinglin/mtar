@@ -37,7 +37,6 @@ static mode_t current_umask;	/* current umask (which is set to 0 if -p) */
 int fd_header;			/*  File descriptor for header blocks. */
 static int fd_content;			/*  File descriptor for content blocks. */
 static unsigned long long blocksum;	/*  Total content blocks. */
-static unsigned long long headernum;    /*  Number of header blocks in a tar file. */
 
 #define HEADER_POSTFIX "h"		/* postfix for the header block temporary file */
 #define CONTENT_POSTFIX "c"		/* postfix for the content block temporary file */
