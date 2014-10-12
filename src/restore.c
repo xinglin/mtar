@@ -34,7 +34,7 @@
 static bool we_are_root;	/* true if our effective uid == 0 */
 static mode_t newdir_umask;	/* umask when creating new directories */
 static mode_t current_umask;	/* current umask (which is set to 0 if -p) */
-static int outputfd;			/*  File descriptor for the output file. */
+int fd_restore;			/*  File descriptor for the restore output. */
 static int inputfd;				/*  file descriptor for the input file */
 static unsigned long long blocksum;	/*  Total content blocks. */
 
@@ -229,9 +229,9 @@ restore_init (void)
     open_fatal(migratoryfile);
 
   /* open output file */
-  outputfd = rmtopen (filename, O_RDWR | O_CREAT | O_BINARY,
+  fd_restore = rmtopen (filename, O_RDWR | O_CREAT | O_BINARY,
 		MODE_RW, rsh_command_option);
-  if (outputfd < 0)
+  if (fd_restore < 0)
     open_fatal(filename);
 
   union block *migratoryheader = xmalloc(BLOCKSIZE);
@@ -296,7 +296,7 @@ restore_finish(void)
   memset(block->buffer, 0, BLOCKSIZE);
   int writtenbytes = 0;
   for(int i = 0; i < MIGRATORY_HEADER_BLOCK_NUM; i++) {
-	  if ( (writtenbytes = blocking_write (outputfd, block->buffer, BLOCKSIZE)) != BLOCKSIZE)
+	  if ( (writtenbytes = blocking_write (fd_restore, block->buffer, BLOCKSIZE)) != BLOCKSIZE)
 		  write_error_details("outputfile", writtenbytes, BLOCKSIZE);
   }
   free(block);
@@ -304,7 +304,7 @@ restore_finish(void)
   /* close input and output */
   if (rmtclose (inputfd) != 0)
     close_error("input file close");
-  if (rmtclose (outputfd) != 0)
+  if (rmtclose (fd_restore) != 0)
     close_error("output file close");
 
 }
@@ -1221,7 +1221,7 @@ restore_file (char *file_name, int typeflag)
 
 		/* Write a complete block */
 		written = count;
-		count = rmtwrite (outputfd, record, written);
+		count = rmtwrite (fd_restore, record, written);
 		blocknum += count/BLOCKSIZE;
 
 		if (count != written)
@@ -1399,6 +1399,9 @@ extract_link (char *file_name, int typeflag)
 static int
 extract_symlink (char *file_name, int typeflag)
 {
+	/* do nothing for restore. */
+	return 0;
+
 #ifdef HAVE_SYMLINK
   bool interdir_made = false;
 
@@ -1671,7 +1674,7 @@ restore_archive (void)
 	if (verbose_option)
 		print_header (&current_stat_info, current_header, -1);
 	/* Write header block for this file.  */
-	count = blocking_write (outputfd, current_header->buffer, BLOCKSIZE);
+	count = blocking_write (fd_restore, current_header->buffer, BLOCKSIZE);
 	if (count != BLOCKSIZE)
 	{
 		write_error_details("outputfile", count, BLOCKSIZE);
