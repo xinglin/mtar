@@ -538,7 +538,7 @@ write_short_name (struct tar_stat_info *st)
 static void
 write_gnu_long_link (struct tar_stat_info *st, const char *p, char type)
 {
-	fprintf(stdlis, "write_gnu_long_link: file=%s, type=%c\n", p, type);
+	// fprintf(stdlis, "write_gnu_long_link: file=%s, type=%c\n", p, type);
   size_t size = strlen (p) + 1;
   size_t bufsize;
   union block *header;
