@@ -34,7 +34,7 @@
 static bool we_are_root;	/* true if our effective uid == 0 */
 static mode_t newdir_umask;	/* umask when creating new directories */
 static mode_t current_umask;	/* current umask (which is set to 0 if -p) */
-static int fd_header;			/*  File descriptor for header blocks. */
+int fd_header;			/*  File descriptor for header blocks. */
 static int fd_content;			/*  File descriptor for content blocks. */
 static unsigned long long blocksum;	/*  Total content blocks. */
 static unsigned long long headernum;    /*  Number of header blocks in a tar file. */
