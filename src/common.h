@@ -98,6 +98,8 @@ enum subcommand
 
 GLOBAL enum subcommand subcommand_option;
 
+GLOBAL unsigned long long headernum;    /*  Number of header blocks in a tar file. */
+
 /* Selected format for output archive.  */
 GLOBAL enum archive_format archive_format;
 
