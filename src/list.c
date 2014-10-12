@@ -33,8 +33,6 @@ union block *recent_long_link;	/* likewise, for long link */
 size_t recent_long_name_blocks;	/* number of blocks in recent_long_name */
 size_t recent_long_link_blocks;	/* likewise, for long link */
 static union block *recent_global_header; /* Recent global header block */
-extern unsigned long long headernum;		/* Number of header blocks in a tar file.
-											/* defined in restore.c and used for determining when to stop read_and() */
 extern int fd_header;	/* file descriptor for writing header blocks */
 						/* defined in migrate.c, to write LONGLINK/LONGNAME header blocks */
 
@@ -472,6 +470,14 @@ read_header (union block **return_block, struct tar_stat_info *info,
 	      *header_copy = *header;
 	      bp = header_copy->buffer + BLOCKSIZE;
 
+	      /* for MIGRATE_COMMAND, write this header block to fd_header */
+	      if (subcommand_option == MIGRATE_SUBCOMMAND) {
+	    	  int written2 = blocking_write(fd_header, header_copy->buffer, BLOCKSIZE);
+	    	  if (written2 != BLOCKSIZE)
+	    		  write_error_details("header file", written2, BLOCKSIZE);
+	    	  headernum ++;
+	      }
+
 	      for (size -= BLOCKSIZE; size > 0; size -= written)
 		{
 		  data_block = find_next_block ();
@@ -488,6 +494,14 @@ read_header (union block **return_block, struct tar_stat_info *info,
 		  bp += written;
 		  set_next_block_after ((union block *)
 					(data_block->buffer + written - 1));
+
+		  /* for MIGRATE_COMMAND, write this file name block to fd_header */
+		  if (subcommand_option == MIGRATE_SUBCOMMAND) {
+			  int written2 = blocking_write(fd_header, data_block->buffer, BLOCKSIZE);
+			  if (written2 != BLOCKSIZE)
+				  write_error_details("header file", written2, BLOCKSIZE);
+			  headernum ++;
+		  }
 		}
 
 	      *bp = '\0';
