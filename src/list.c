@@ -33,8 +33,10 @@ union block *recent_long_link;	/* likewise, for long link */
 size_t recent_long_name_blocks;	/* number of blocks in recent_long_name */
 size_t recent_long_link_blocks;	/* likewise, for long link */
 static union block *recent_global_header; /* Recent global header block */
-extern int fd_header;	/* file descriptor for writing header blocks */
+extern int fd_header;	/* file descriptor for writing header blocks during migration */
 						/* defined in migrate.c, to write LONGLINK/LONGNAME header blocks */
+extern int fd_restore;	/* file descriptor for writing header blocks during restore */
+						/* defined in restore.c, to write LONGLINK/LONGNAME header blocks */
 
 #define GID_FROM_HEADER(where) gid_from_header (where, sizeof (where))
 #define MAJOR_FROM_HEADER(where) major_from_header (where, sizeof (where))
@@ -477,6 +479,13 @@ read_header (union block **return_block, struct tar_stat_info *info,
 	    		  write_error_details("header file", written2, BLOCKSIZE);
 	    	  headernum ++;
 	      }
+	      /* for RESTORE_COMMAND, write this header block to fd_header */
+	      if (subcommand_option == RESTORE_SUBCOMMAND) {
+	    	  int written2 = blocking_write(fd_restore, header_copy->buffer, BLOCKSIZE);
+	    	  if (written2 != BLOCKSIZE)
+	    		  write_error_details("restore file", written2, BLOCKSIZE);
+	    	  headernum --;
+	      }
 
 	      for (size -= BLOCKSIZE; size > 0; size -= written)
 		{
@@ -501,6 +510,13 @@ read_header (union block **return_block, struct tar_stat_info *info,
 			  if (written2 != BLOCKSIZE)
 				  write_error_details("header file", written2, BLOCKSIZE);
 			  headernum ++;
+		  }
+		  /* for RESTORE_COMMAND, write this file name block to fd_header */
+		  if (subcommand_option == RESTORE_SUBCOMMAND) {
+			  int written2 = blocking_write(fd_restore, data_block->buffer, BLOCKSIZE);
+			  if (written2 != BLOCKSIZE)
+				  write_error_details("restore file", written2, BLOCKSIZE);
+			  headernum --;
 		  }
 		}
 
