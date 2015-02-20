@@ -93,6 +93,7 @@ enum subcommand
   UPDATE_SUBCOMMAND,		/* -u */
   MIGRATE_SUBCOMMAND,		/* -e */
   RESTORE_SUBCOMMAND,		/* -E */
+  FILTER_SUBCOMMAND,		/* -D */
   TEST_LABEL_SUBCOMMAND,        /* --test-label */
 };
 
@@ -524,6 +525,11 @@ void migrate_finish (void);
 void restore_init (void);
 void restore_archive (void);
 void restore_finish (void);
+
+/* Module filter.c  */
+void filter_init (void);
+void filter_archive (void);
+void filter_finish (void);
 
 /* Module delete.c.  */
 

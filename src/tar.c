@@ -213,6 +213,15 @@ subcommand_string (enum subcommand c)
     case EXTRACT_SUBCOMMAND:
       return "-x";
 
+    case MIGRATE_SUBCOMMAND:
+    	return "-e";
+
+    case RESTORE_SUBCOMMAND:
+    	return "-E";
+
+    case FILTER_SUBCOMMAND:
+    	return "-D";
+
     case LIST_SUBCOMMAND:
       return "-t";
 
@@ -1366,6 +1375,10 @@ parse_opt (int key, char *arg, struct argp_state *state)
     case 'd':
       set_subcommand_option (DIFF_SUBCOMMAND);
       break;
+
+    case 'D':
+    	set_subcommand_option (FILTER_SUBCOMMAND);
+    	break;
 
     case 'e':
       set_subcommand_option (MIGRATE_SUBCOMMAND);
@@ -2706,6 +2719,12 @@ main (int argc, char **argv)
     	restore_init ();
     	read_and (restore_archive);
     	restore_finish ();
+    	break;
+
+    case FILTER_SUBCOMMAND:
+    	filter_init ();
+    	read_and (filter_archive);
+    	filter_finish ();
     	break;
 
     case LIST_SUBCOMMAND:
