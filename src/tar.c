@@ -420,6 +420,8 @@ static struct argp_option options[] = {
    N_("migrate file header blocks together for an archive"), GRID+1 },
    {"restore", 'E', 0, 0,
       N_("Restore a migratory tar file to be a regular tar file"), GRID+1 },
+  {"filter", 'D', 0, 0,
+	  N_("Filter a tar file, to remove padded bits"), GRID+1 },
   {"create", 'c', 0, 0,
    N_("create a new archive"), GRID+1 },
   {"diff", 'd', 0, 0,
