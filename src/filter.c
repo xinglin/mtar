@@ -36,7 +36,7 @@
 static bool we_are_root;	/* true if our effective uid == 0 */
 static mode_t newdir_umask;	/* umask when creating new directories */
 static mode_t current_umask;	/* current umask (which is set to 0 if -p) */
-int fd_header;			/*  File descriptor for header blocks. */
+int fd_nopad;			/*  File descriptor for header blocks. */
 static unsigned long long blocksum;	/*  Total content blocks. */
 
 #define FILTER_POSTFIX "f"		/* postfix for the  output file */
@@ -210,9 +210,9 @@ filter_init (void)
       fprintf(stdlis, "  filterfile=%s\n", filterfile);  
     }
 
-  fd_header = rmtopen (filterfile, O_RDWR | O_CREAT | O_BINARY,
+  fd_nopad = rmtopen (filterfile, O_RDWR | O_CREAT | O_BINARY,
 		MODE_RW, rsh_command_option);
-  if (fd_header < 0)
+  if (fd_nopad < 0)
     open_fatal(filterfile);
 
   blocksum = 0;
@@ -228,13 +228,13 @@ filter_finish(void)
   memset(block->buffer, 0, BLOCKSIZE);
   int writtenbytes = 0;
   for(int i = 0; i < MIGRATORY_HEADER_BLOCK_NUM; i++) {
-		if ( (writtenbytes = blocking_write (fd_header, block->buffer, BLOCKSIZE)) != BLOCKSIZE)
+		if ( (writtenbytes = blocking_write (fd_nopad, block->buffer, BLOCKSIZE)) != BLOCKSIZE)
 			  write_error_details("outputfile", writtenbytes, BLOCKSIZE);
   }
   free(block);
 
   /* Close file descriptors for header and content files */
-  if (rmtclose (fd_header) != 0)
+  if (rmtclose (fd_nopad) != 0)
     close_error("header file descriptor close");
   fprintf(stdlis, "migrate_finish: \n");
   fprintf(stdlis, "  data blocks  : %llu\n", blocksum);
@@ -1151,7 +1151,7 @@ migrate_file (char *file_name, int typeflag)
 	    written = ((written + BLOCKSIZE-1)/BLOCKSIZE)*BLOCKSIZE;
 	  }
 	errno = 0;
-	count = blocking_write (fd_header, data_block->buffer, written);
+	count = blocking_write (fd_nopad, data_block->buffer, written);
 	blocknum += count/BLOCKSIZE;
 	blocksum += count/BLOCKSIZE;
 	size -= written;
@@ -1620,7 +1620,7 @@ filter_archive (void)
   // if (verbose_option)
   //  print_header (&current_stat_info, current_header, -1);
   /* Write header block for this file.  */  
-  count = blocking_write (fd_header, current_header->buffer, BLOCKSIZE);
+  count = blocking_write (fd_nopad, current_header->buffer, BLOCKSIZE);
   if (count != BLOCKSIZE)
     {
         write_error_details(current_stat_info.file_name, count, BLOCKSIZE);
