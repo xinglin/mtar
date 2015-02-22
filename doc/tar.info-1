@@ -1,6 +1,6 @@
-This is tar.info, produced by makeinfo version 4.13 from tar.texi.
+This is tar.info, produced by makeinfo version 4.8 from tar.texi.
 
-This manual is for GNU `tar' (version 1.27.1, 24 September 2013), which
+   This manual is for GNU `tar' (version 1.27.1, 7 October 2014), which
 creates and extracts files from archives.
 
    Copyright (C) 1992, 1994-1997, 1999-2001, 2003-2013 Free Software
@@ -34,7 +34,7 @@ File: tar.info,  Node: Top,  Next: Introduction,  Up: (dir)
 GNU tar: an archiver tool
 *************************
 
-This manual is for GNU `tar' (version 1.27.1, 24 September 2013), which
+This manual is for GNU `tar' (version 1.27.1, 7 October 2014), which
 creates and extracts files from archives.
 
    Copyright (C) 1992, 1994-1997, 1999-2001, 2003-2013 Free Software
@@ -571,7 +571,7 @@ to create version 1.12.  The book for versions from 1.14 up to 1.27.1
 were edited by the current maintainer, Sergey Poznyakoff.
 
    For version 1.12, Daniel Hagerty contributed a great deal of
-technical consulting.  In particular, he is the primary author of *note
+technical consulting.  In particular, he is the primary author of *Note
 Backups::.
 
    In July, 2003 GNU `tar' was put on CVS at savannah.gnu.org (see
@@ -725,7 +725,7 @@ you can type
 or even
      tar -cvf afiles.tar apple angst aspic
 
-For more information on option syntax, see *note Advanced tar::.  In
+For more information on option syntax, see *Note Advanced tar::.  In
 discussions in the text, when we name an option by its long form, we
 also give the corresponding short option in parentheses.
 
@@ -819,7 +819,7 @@ roughly like one of the following:
 To avoid confusion, we recommend that you always specify an archive file
 name by using `--file=ARCHIVE-NAME' (`-f ARCHIVE-NAME') when writing
 your `tar' commands.  For more information on using the
-`--file=ARCHIVE-NAME' (`-f ARCHIVE-NAME') option, see *note file::.
+`--file=ARCHIVE-NAME' (`-f ARCHIVE-NAME') option, see *Note file::.
 
 
 File: tar.info,  Node: verbose tutorial,  Next: help tutorial,  Prev: file tutorial,  Up: Two Frequent Options
@@ -898,7 +898,7 @@ Note that you must double the hyphens properly each time.
    * File name.  If the name contains any special characters (white
      space, newlines, etc.) these are displayed in an unambiguous form
      using so called "quoting style".  For the detailed discussion of
-     available styles and on how to use them, see *note quoting
+     available styles and on how to use them, see *Note quoting
      styles::.
 
      Depending on the file type, the name can be followed by some
@@ -1029,7 +1029,7 @@ named by `--file=ARCHIVE-NAME' (`-f ARCHIVE-NAME') if it exists.  `tar'
 will not tell you if you are about to overwrite an archive unless you
 specify an option which does this (*note backup::, for the information
 on how to do so).  To add files to an existing archive, you need to use
-a different option, such as `--append' (`-r'); see *note append:: for
+a different option, such as `--append' (`-r'); see *Note append:: for
 information on how to do this.
 
 
@@ -1128,7 +1128,7 @@ As we said before, the `--create' (`-c') operation is one of the most
 basic uses of `tar', and you will use it countless times.  Eventually,
 you will probably want to use abbreviated (or "short") forms of
 options.  A full discussion of the three different forms that options
-can take appears in *note Styles::; for now, here is what the previous
+can take appears in *Note Styles::; for now, here is what the previous
 example (including the `--verbose' (`-v') option) looks like using
 short option forms:
 
@@ -1277,7 +1277,7 @@ as with `--create' (`-c') to specify the name of the archive.
 
    If you use the `--verbose' (`-v') option with `--list', then `tar'
 will print out a listing reminiscent of `ls -l', showing owner, file
-size, and so forth.  This output is described in detail in *note
+size, and so forth.  This output is described in detail in *Note
 verbose member listing::.
 
    If you had used `--verbose' (`-v') mode, the example above would
@@ -1752,7 +1752,7 @@ GNU `tar' has a total of eight operating modes which allow you to
 perform a variety of tasks.  You are required to choose one operating
 mode each time you employ the `tar' program by specifying one, and only
 one operation as an argument to the `tar' command (the corresponding
-options may be found at *note frequent operations:: and *note
+options may be found at *Note frequent operations:: and *Note
 Operations::).  Depending on circumstances, you may also wish to
 customize how the chosen operating mode behaves.  For example, you may
 wish to change the way the output looks, or the format of the files
@@ -2234,7 +2234,7 @@ File: tar.info,  Node: Option Summary,  Next: Short Option Summary,  Prev: Opera
      visual indication that `tar' is still running, but don't want to
      see `--verbose' output.  You can also instruct `tar' to execute a
      list of actions on each checkpoint, see `--checkpoint-action'
-     below.  For a detailed description, see *note checkpoints::.
+     below.  For a detailed description, see *Note checkpoints::.
 
 `--checkpoint-action=ACTION'
      Instruct `tar' to execute an action upon hitting a breakpoint.
@@ -2509,7 +2509,7 @@ File: tar.info,  Node: Option Summary,  Next: Short Option Summary,  Prev: Opera
 `--keep-old-files'
 `-k'
      Do not overwrite existing files when extracting files from an
-     archive.  Return error if such files exist.  See also *note
+     archive.  Return error if such files exist.  See also *Note
      --skip-old-files::.
 
      *Note Keep Old Files::.
@@ -3023,53 +3023,53 @@ them with the equivalent long option.
 
 Short Option   Reference
 -------------------------------------------------------------------------- 
--A             *note --concatenate::.
--B             *note --read-full-records::.
--C             *note --directory::.
--F             *note --info-script::.
--G             *note --incremental::.
--J             *note --xz::.
--K             *note --starting-file::.
--L             *note --tape-length::.
--M             *note --multi-volume::.
--N             *note --newer::.
--O             *note --to-stdout::.
--P             *note --absolute-names::.
--R             *note --block-number::.
--S             *note --sparse::.
--T             *note --files-from::.
--U             *note --unlink-first::.
--V             *note --label::.
--W             *note --verify::.
--X             *note --exclude-from::.
--Z             *note --compress::.
--b             *note --blocking-factor::.
--c             *note --create::.
--d             *note --compare::.
--f             *note --file::.
--g             *note --listed-incremental::.
--h             *note --dereference::.
--i             *note --ignore-zeros::.
--j             *note --bzip2::.
--k             *note --keep-old-files::.
--l             *note --check-links::.
--m             *note --touch::.
--o             When creating, *note --no-same-owner::, when extracting --
-               *note --portability::.
+-A             *Note --concatenate::.
+-B             *Note --read-full-records::.
+-C             *Note --directory::.
+-F             *Note --info-script::.
+-G             *Note --incremental::.
+-J             *Note --xz::.
+-K             *Note --starting-file::.
+-L             *Note --tape-length::.
+-M             *Note --multi-volume::.
+-N             *Note --newer::.
+-O             *Note --to-stdout::.
+-P             *Note --absolute-names::.
+-R             *Note --block-number::.
+-S             *Note --sparse::.
+-T             *Note --files-from::.
+-U             *Note --unlink-first::.
+-V             *Note --label::.
+-W             *Note --verify::.
+-X             *Note --exclude-from::.
+-Z             *Note --compress::.
+-b             *Note --blocking-factor::.
+-c             *Note --create::.
+-d             *Note --compare::.
+-f             *Note --file::.
+-g             *Note --listed-incremental::.
+-h             *Note --dereference::.
+-i             *Note --ignore-zeros::.
+-j             *Note --bzip2::.
+-k             *Note --keep-old-files::.
+-l             *Note --check-links::.
+-m             *Note --touch::.
+-o             When creating, *Note --no-same-owner::, when extracting --
+               *Note --portability::.
                
                   The latter usage is deprecated.  It is retained for
                compatibility with the earlier versions of GNU `tar'.  In
                future releases `-o' will be equivalent to
                `--no-same-owner' only.
--p             *note --preserve-permissions::.
--r             *note --append::.
--s             *note --same-order::.
--t             *note --list::.
--u             *note --update::.
--v             *note --verbose::.
--w             *note --interactive::.
--x             *note --extract::.
--z             *note --gzip::.
+-p             *Note --preserve-permissions::.
+-r             *Note --append::.
+-s             *Note --same-order::.
+-t             *Note --list::.
+-u             *Note --update::.
+-v             *Note --verbose::.
+-w             *Note --interactive::.
+-x             *Note --extract::.
+-z             *Note --gzip::.
 
 
 File: tar.info,  Node: help,  Next: defaults,  Prev: All Options,  Up: tar invocation
@@ -3703,8 +3703,8 @@ complementary notes for these operations.
      can initialize an empty archive and later use `--append' (`-r')
      for adding all members.  Some applications would not welcome
      making an exception in the way of adding the first archive member.
-     On the other hand, many people reported that it is dangerously too
-     easy for `tar' to destroy a magnetic tape with an empty
+     On the other hand, many people reported that it is dangerously
+     too easy for `tar' to destroy a magnetic tape with an empty
      archive(1).  The two most common errors are:
 
        1. Mistakingly using `create' instead of `extract', when the
@@ -3809,7 +3809,7 @@ The archive `afiles.tar' contains the members `apple', `angst', and
 
    Unless we state otherwise, all practicing you do and examples you
 follow in this chapter will take place in the `practice' directory that
-you created in the previous chapter; see *note prepare for examples::.
+you created in the previous chapter; see *Note prepare for examples::.
 (Below in this section, we will remind you of the state of the examples
 where the last chapter left them.)
 
@@ -3891,7 +3891,7 @@ to add the member you want to be in the archive.  Note that you can not
 change the order of the archive; the most recently added member will
 still appear last.  In this sense, you cannot truly "replace" one
 member with another.  (Replacing one member with another will not work
-on certain types of media, such as tapes; see *note delete:: and *note
+on certain types of media, such as tapes; see *Note delete:: and *Note
 Media::, for more information.)
 
 * Menu:
@@ -4000,7 +4000,7 @@ example:
      $ tar --extract -vv --occurrence --file=collection.tar blues
      -rw-r--r-- me/user          21 1996-09-23 16:44 blues
 
-   *Note Writing::, for more information on `--extract' and see *note
+   *Note Writing::, for more information on `--extract' and see *Note
 -occurrence: Option Summary, for a description of `--occurrence' option.
 
 
@@ -4067,7 +4067,7 @@ more information about tapes.
 reasons: it does not change directory content entries, and it lengthens
 the archive every time it is used.  The GNU `tar' options intended
 specifically for backups are more efficient.  If you need to run
-backups, please consult *note Backups::.
+backups, please consult *Note Backups::.
 
 
 File: tar.info,  Node: concatenate,  Next: delete,  Prev: update,  Up: Advanced tar
@@ -4149,7 +4149,7 @@ improperly combined using the `cat' shell utility.
    ---------- Footnotes ----------
 
    (1) This can cause multiple members to have the same name.  For
-information on how this affects reading the archive, see *note
+information on how this affects reading the archive, see *Note
 multiple::.
 
 
@@ -4229,7 +4229,7 @@ report an error message.)
    The spirit behind the `--compare' (`--diff', `-d') option is to
 check whether the archive represents the current state of files on
 disk, more than validating the integrity of the archive media.  For
-this latter goal, see *note verify::.
+this latter goal, see *Note verify::.
 
 
 File: tar.info,  Node: create options,  Next: extract options,  Prev: Advanced tar,  Up: operations
@@ -4257,7 +4257,7 @@ its "metadata", such as modification time, mode and ownership of the
 file.  GNU `tar' allows to replace these data with other values when
 adding files to the archive.  The options described in this section
 affect creation of archives of any type.  For POSIX archives, see also
-*note PAX keywords::, for additional ways of controlling metadata,
+*Note PAX keywords::, for additional ways of controlling metadata,
 stored in the archive.
 
 `--mode=PERMISSIONS'
@@ -4360,7 +4360,7 @@ more information than just file contents, such as the owner, the
 permissions, the modification date, and so forth.  This section
 presents options to be used with `--extract' when certain special
 considerations arise.  You may review the information presented in
-*note extract:: for more basic information about the `--extract'
+*Note extract:: for more basic information about the `--extract'
 operation.
 
 * Menu:
@@ -4778,7 +4778,7 @@ the standard input of an external program:
      COMMAND.  When this option is used, instead of creating the files
      specified, `tar' invokes COMMAND and pipes the contents of the
      files to its standard output.  The COMMAND may contain command
-     line arguments (see *note Running External Commands: external, for
+     line arguments (see *Note Running External Commands: external, for
      more detail).
 
      Notice, that COMMAND is executed once for each regular file
@@ -4925,7 +4925,7 @@ course, that there is now free space, or that you are now extracting
 into a different file system.  (You could also choose to suspend `tar',
 remove unnecessary files from the file system, and then resume the same
 `tar' operation.  In this case, `--starting-file' is not necessary.)
-See also *note interactive::, and *note exclude::.
+See also *Note interactive::, and *Note exclude::.
 
 
 File: tar.info,  Node: Same Order,  Prev: Starting File,  Up: Scarce
@@ -4986,9 +4986,9 @@ character device, or when it refers to a remote file.
 
    For the sake of simplicity and efficiency, backups are made by
 renaming old files prior to creation or extraction, and not by copying.
-The original name is restored if the file creation fails.  If a failure
-occurs after a partial extraction of a file, both the backup and the
-partially extracted file are kept.
+The original name is restored if the file creation fails.  If a
+failure occurs after a partial extraction of a file, both the backup
+and the partially extracted file are kept.
 
 `--backup[=METHOD]'
      Back up files that are about to be overwritten or removed.
@@ -5275,7 +5275,7 @@ this, use `--no-check-device' option:
      TAR_OPTIONS::).
 
    There is also another way to cope with changing device numbers.  It
-is described in detail in *note Fixing Snapshot Files::.
+is described in detail in *Note Fixing Snapshot Files::.
 
    Note that incremental archives use `tar' extensions and may not be
 readable by non-GNU versions of the `tar' program.
@@ -5420,7 +5420,7 @@ script (e.g., see `RESTORE_BEGIN' below).  For more information about
 shell script syntax, please refer to the definition of the Shell
 Command Language
 (http://www.opengroup.org/onlinepubs/009695399/utilities/xcu_chap02.html#ta
-g_02).  See also *note Bash Features: (bashref)Top.
+g_02).  See also *Note Bash Features: (bashref)Top.
 
    The shell variables controlling behavior of `backup' and `restore'
 are described in the following subsections.
@@ -5538,7 +5538,7 @@ File: tar.info,  Node: General-Purpose Variables,  Next: Magnetic Tape Control, 
      next volume.  Administrators may want to tailor this script for
      their site.  If this variable isn't set, GNU `tar' will display
      its built-in prompt, and will expect confirmation from the
-     console.  For the description of the default prompt, see *note
+     console.  For the description of the default prompt, see *Note
      change volume prompt::.
 
 
@@ -5864,10 +5864,10 @@ File: tar.info,  Node: Choosing,  Next: Date input formats,  Prev: Backups,  Up:
 ************************************
 
 Certain options to `tar' enable you to specify a name for your archive.
-Other options let you decide which files to include or exclude from the
-archive, based on when or whether files were modified, whether the file
-names do or don't match specified patterns, or whether files are in
-specified directories.
+Other options let you decide which files to include or exclude from
+the archive, based on when or whether files were modified, whether the
+file names do or don't match specified patterns, or whether files are
+in specified directories.
 
    This chapter discusses these options in detail.
 
@@ -6597,6 +6597,7 @@ caused by certain characters.  This is called "name quoting".  The
 characters in question are:
 
    * Non-printable control characters:
+
      Character     ASCII   Character name
      --------------------------------------------------------------- 
      \a            7       Audible bell
@@ -6815,7 +6816,7 @@ However, there are some cases when it is not.
    First of all, it is often unsafe to extract archive members with
 absolute file names or those that begin with a `../'.  GNU `tar' takes
 special precautions when extracting such names and provides a special
-option for handling them, which is described in *note absolute::.
+option for handling them, which is described in *Note absolute::.
 
    Secondly, you may wish to extract file names without some leading
 directory components, or with otherwise modified names.  In other cases
@@ -6882,7 +6883,7 @@ The EXPRESSION is a `sed'-like replace expression of the form:
 
 where REGEXP is a "regular expression", REPLACE is a replacement for
 each file name part that matches REGEXP.  Both REGEXP and REPLACE are
-described in detail in *note The "s" Command: (sed)The "s" Command.
+described in detail in *Note The "s" Command: (sed)The "s" Command.
 
    Any delimiter can be used in lieu of `/', the only requirement being
 that it be used consistently throughout the expression. For example,
@@ -7071,7 +7072,7 @@ deciding whether or not to archive the files.
 modified after the date specified.  A file's status is considered to
 have changed if its contents have been modified, or if its owner,
 permissions, and so forth, have been changed.  (For more information on
-how to specify a date, see *note Date input formats::; remember that the
+how to specify a date, see *Note Date input formats::; remember that the
 entire date argument must be quoted if it contains any spaces.)
 
    Gurus would say that `--after-date' tests both the data modification
@@ -7124,7 +7125,7 @@ specified directories.  If you specify `--no-recursion', you can use
 the `find' (*note find: (find)Top.)  utility for hunting through levels
 of directories to construct a list of file names which you could then
 pass to `tar'.  `find' allows you to be more selective when choosing
-which files to archive; see *note files::, for more information on
+which files to archive; see *Note files::, for more information on
 using `find' with `tar'.
 
 `--no-recursion'

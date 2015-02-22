@@ -1,6 +1,6 @@
-This is tar.info, produced by makeinfo version 4.13 from tar.texi.
+This is tar.info, produced by makeinfo version 4.8 from tar.texi.
 
-This manual is for GNU `tar' (version 1.27.1, 24 September 2013), which
+   This manual is for GNU `tar' (version 1.27.1, 7 October 2014), which
 creates and extracts files from archives.
 
    Copyright (C) 1992, 1994-1997, 1999-2001, 2003-2013 Free Software
@@ -382,7 +382,7 @@ whereas the following one will use `lzma':
      $ tar caf archive.tar.lzma .
 
    For a complete list of file name suffixes recognized by GNU `tar',
-see *note auto-compress::.
+see *Note auto-compress::.
 
    Reading compressed archive is even simpler: you don't need to specify
 any additional options as GNU `tar' recognizes its format
@@ -531,7 +531,7 @@ compressed archives.  These are:
      GNU `tar' does not support.  The COMMAND argument is a valid
      command invocation, as you would type it at the command line
      prompt, with any additional options as needed.  Enclose it in
-     quotes if it contains white space (see *note Running External
+     quotes if it contains white space (see *Note Running External
      Commands: external, for more detail).
 
      The COMMAND should follow two conventions:
@@ -1153,7 +1153,7 @@ keyword option taking one of the following forms:
    In any of the forms described above, the VALUE may be a string
 enclosed in curly braces.  In that case, the string between the braces
 is understood either as a textual time representation, as described in
-*note Date input formats::, or a name of the existing file, starting
+*Note Date input formats::, or a name of the existing file, starting
 with `/' or `.'.  In the latter case, the modification time of that
 file is used.
 
@@ -1450,7 +1450,7 @@ member properties that cannot be stored in the standard `ustar' header.
 While optional for expanding sparse version 1.0 members, the use of
 extended headers is mandatory when expanding sparse members in older
 sparse formats: v.0.0 and v.0.1 (The sparse formats are described in
-detail in *note Sparse Formats::.)  So, for these formats, the question
+detail in *Note Sparse Formats::.)  So, for these formats, the question
 is: how to obtain extended headers from the archive?
 
    If you use a `tar' implementation that does not support PAX format,
@@ -1814,10 +1814,10 @@ File: tar.info,  Node: Remote Tape Server,  Next: Common Problems and Solutions,
 
 In order to access the tape drive on a remote machine, `tar' uses the
 remote tape server written at the University of California at Berkeley.
-The remote tape server must be installed as `PREFIX/libexec/rmt' on any
-machine whose tape drive you want to use.  `tar' calls `rmt' by running
-an `rsh' or `remsh' to the remote machine, optionally using a different
-login name if one is supplied.
+The remote tape server must be installed as `PREFIX/libexec/rmt' on
+any machine whose tape drive you want to use.  `tar' calls `rmt' by
+running an `rsh' or `remsh' to the remote machine, optionally using a
+different login name if one is supplied.
 
    A copy of the source for the remote tape server is provided.  Its
 source code can be freely distributed.  It is compiled and installed by
@@ -2055,8 +2055,8 @@ of 512 bytes) is called the "blocking factor".  The
 `--blocking-factor=512-SIZE' (`-b 512-SIZE') option specifies the
 blocking factor of an archive.  The default blocking factor is
 typically 20 (i.e., 10240 bytes), but can be specified at installation.
-To find out the blocking factor of an existing archive, use `tar --list
---file=ARCHIVE-NAME'.  This may not work on some devices.
+To find out the blocking factor of an existing archive, use `tar
+--list --file=ARCHIVE-NAME'.  This may not work on some devices.
 
    Records are separated by gaps, which waste space on the archive
 media.  If you are archiving on magnetic tape, using a larger blocking
@@ -2583,7 +2583,7 @@ FILE-OF-NUMBER should be an non-existing file to be created, or else, a
 file already containing a decimal number.  That number will be used as
 the volume number of the first volume written.  When `tar' is finished,
 it will rewrite the file with the now-current volume number. (This does
-not change the volume number written on a tape label, as per *note
+not change the volume number written on a tape label, as per *Note
 label::, it _only_ affects the number used in the prompt.)
 
    If you want more elaborate behavior than this, you can write a
@@ -2718,7 +2718,7 @@ volumes which are added later.  To label subsequent volumes, specify
    Notice that multi-volume support is a GNU extension and the archives
 created in this mode should be read only using GNU `tar'.  If you
 absolutely have to process such archives using a third-party `tar'
-implementation, read *note Split Recovery::.
+implementation, read *Note Split Recovery::.
 
    ---------- Footnotes ----------
 
@@ -2748,12 +2748,12 @@ make sure the label on the tape matches the one you gave.  *Note
 label::.
 
    When `tar' writes an archive to tape, it creates a single tape file.
-If multiple archives are written to the same tape, one after the other,
-they each get written as separate tape files.  When extracting, it is
-necessary to position the tape at the right place before running `tar'.
-To do this, use the `mt' command.  For more information on the `mt'
-command and on the organization of tapes into a sequence of tape files,
-see *note mt::.
+If multiple archives are written to the same tape, one after the
+other, they each get written as separate tape files.  When extracting,
+it is necessary to position the tape at the right place before running
+`tar'.  To do this, use the `mt' command.  For more information on the
+`mt' command and on the organization of tapes into a sequence of tape
+files, see *Note mt::.
 
    People seem to often do:
 
@@ -3372,6 +3372,7 @@ order: a short option, eventually followed by a list of corresponding
 long option names, followed by a short description of the option. For
 example, here is an excerpt from the actual `tar --help' output:
 
+
  Main operation mode:
 
   -A, --catenate, --concatenate   append tar files to an archive
@@ -3502,6 +3503,7 @@ Boolean assignment
      Column in which "group headers" are printed.  A group header is a
      descriptive text preceding an option group.  For example, in the
      following text:
+
 
       Main operation mode:
 
@@ -3639,7 +3641,7 @@ information about file types.
    Archives are permitted to have more than one member with the same
 member name.  One way this situation can occur is if more than one
 version of a file has been stored in the archive.  For information
-about adding new versions of a file to an archive, see *note update::.
+about adding new versions of a file to an archive, see *Note update::.
 
    In addition to entries describing archive members, an archive may
 contain entries which `tar' itself uses to store information.  *Note
@@ -4105,9 +4107,9 @@ files in an archive.  These are listed below.
      option.  The original type of the file is not given here.  The
      `size' field gives the maximum size of this piece of the file
      (assuming the volume does not end before the file is written out).
-     The `offset' field gives the offset from the beginning of the file
-     where this part of the file begins.  Thus `size' plus `offset'
-     should equal the original size of the file.
+     The `offset' field gives the offset from the beginning of the
+     file where this part of the file begins.  Thus `size' plus
+     `offset' should equal the original size of the file.
 
 `GNUTYPE_SPARSE'
 `'S''
@@ -4141,7 +4143,7 @@ Storing Sparse Files
 ====================
 
 The notion of sparse file, and the ways of handling it from the point
-of view of GNU `tar' user have been described in detail in *note
+of view of GNU `tar' user have been described in detail in *Note
 sparse::.  This chapter describes the internal format GNU `tar' uses to
 store such files.
 
@@ -5472,7 +5474,7 @@ Appendix H Index of Command Line Options
 
 This appendix contains an index of all GNU `tar' long command line
 options. The options are listed without the preceding double-dash.  For
-a cross-reference of short command line options, see *note Short Option
+a cross-reference of short command line options, see *Note Short Option
 Summary::.
 
  [index ]
@@ -5487,8 +5489,8 @@ Summary::.
 * anchored:                              controlling pattern-matching.
                                                               (line  79)
 * anchored, summary:                     Option Summary.      (line  16)
-* append <1>:                            appending files.     (line   6)
-* append:                                append.              (line   6)
+* append <1>:                            append.              (line   6)
+* append:                                appending files.     (line   6)
 * append, summary:                       Operation Summary.   (line   6)
 * atime-preserve:                        Attributes.          (line  10)
 * atime-preserve, summary:               Option Summary.      (line  20)
@@ -5550,7 +5552,7 @@ Summary::.
 * exclude-caches-all, summary:           Option Summary.      (line 206)
 * exclude-caches-under:                  exclude.             (line 109)
 * exclude-caches-under, summary:         Option Summary.      (line 200)
-* exclude-from:                          exclude.             (line   6)
+* exclude-from:                          exclude.             (line  20)
 * exclude-from, summary:                 Option Summary.      (line 188)
 * exclude-tag:                           exclude.             (line 122)
 * exclude-tag, summary:                  Option Summary.      (line 210)
@@ -5613,8 +5615,8 @@ Summary::.
 * keep-old-files, introduced:            Dealing with Old Files.
                                                               (line  16)
 * keep-old-files, summary:               Option Summary.      (line 376)
-* label <1>:                             label.               (line   6)
-* label:                                 Tape Files.          (line   6)
+* label <1>:                             Tape Files.          (line   6)
+* label:                                 label.               (line   6)
 * label, summary:                        Option Summary.      (line 384)
 * level, described:                      Incremental Dumps.   (line  76)
 * level, summary:                        Option Summary.      (line 391)
@@ -5645,7 +5647,7 @@ Summary::.
 * new-volume-script:                     Multi-Volume Archives.
                                                               (line  88)
 * new-volume-script, short description:  Device.              (line 122)
-* new-volume-script, summary:            Option Summary.      (line 344)
+* new-volume-script, summary:            Option Summary.      (line 441)
 * newer:                                 after.               (line  24)
 * newer, summary:                        Option Summary.      (line 444)
 * newer-mtime:                           after.               (line  35)
@@ -5716,10 +5718,10 @@ Summary::.
 * preserve-permissions, short description: Attributes.        (line 109)
 * preserve-permissions, summary:         Option Summary.      (line 608)
 * quote-chars, summary:                  Option Summary.      (line 618)
-* quoting-style:                         quoting styles.      (line  38)
+* quoting-style:                         quoting styles.      (line  39)
 * quoting-style, summary:                Option Summary.      (line 622)
-* read-full-records <1>:                 read full records.   (line   6)
-* read-full-records:                     Reading.             (line   6)
+* read-full-records <1>:                 Reading.             (line   6)
+* read-full-records:                     read full records.   (line   6)
 * read-full-records, short description:  Blocking Factor.     (line 172)
 * read-full-records, summary:            Option Summary.      (line 629)
 * record-size, summary:                  Option Summary.      (line 634)
@@ -5740,7 +5742,7 @@ Summary::.
 * same-permissions:                      Setting Access Permissions.
                                                               (line  10)
 * same-permissions, short description:   Attributes.          (line 109)
-* same-permissions, summary:             Option Summary.      (line 608)
+* same-permissions, summary:             Option Summary.      (line 681)
 * seek, summary:                         Option Summary.      (line 684)
 * show-defaults:                         defaults.            (line   6)
 * show-defaults, summary:                Option Summary.      (line 693)
@@ -5779,16 +5781,16 @@ Summary::.
 * to-stdout, summary:                    Option Summary.      (line 780)
 * totals:                                verbose.             (line  46)
 * totals, summary:                       Option Summary.      (line 785)
-* touch <1>:                             Attributes.          (line  33)
-* touch:                                 Data Modification Times.
+* touch <1>:                             Data Modification Times.
                                                               (line  15)
+* touch:                                 Attributes.          (line  33)
 * touch, summary:                        Option Summary.      (line 790)
 * transform:                             transform.           (line  74)
 * transform, summary:                    Option Summary.      (line 796)
 * uncompress:                            gzip.                (line 113)
-* uncompress, summary:                   Option Summary.      (line 153)
+* uncompress, summary:                   Option Summary.      (line 810)
 * ungzip:                                gzip.                (line  91)
-* ungzip, summary:                       Option Summary.      (line 298)
+* ungzip, summary:                       Option Summary.      (line 813)
 * unlink-first:                          Unlink First.        (line   6)
 * unlink-first, introduced:              Dealing with Old Files.
                                                               (line  52)
@@ -5796,8 +5798,8 @@ Summary::.
 * unquote:                               Selecting Archive Members.
                                                               (line  39)
 * unquote, summary:                      Option Summary.      (line 822)
-* update <1>:                            how to update.       (line   6)
-* update:                                update.              (line   6)
+* update <1>:                            update.              (line   6)
+* update:                                how to update.       (line   6)
 * update, summary:                       Operation Summary.   (line  50)
 * usage:                                 help.                (line  53)
 * use-compress-program:                  gzip.                (line 177)

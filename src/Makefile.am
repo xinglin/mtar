@@ -30,7 +30,8 @@ tar_SOURCES = \
  exit.c\
  extract.c\
  migrate.c\
- restore.c
+ restore.c\
+ filter.c\
  xheader.c\
  incremen.c\
  list.c\
