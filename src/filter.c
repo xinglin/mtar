@@ -37,7 +37,6 @@ static bool we_are_root;	/* true if our effective uid == 0 */
 static mode_t newdir_umask;	/* umask when creating new directories */
 static mode_t current_umask;	/* current umask (which is set to 0 if -p) */
 int fd_header;			/*  File descriptor for header blocks. */
-static int fd_content;			/*  File descriptor for content blocks. */
 static unsigned long long blocksum;	/*  Total content blocks. */
 
 #define FILTER_POSTFIX "f"		/* postfix for the  output file */
@@ -214,7 +213,7 @@ filter_init (void)
   fd_header = rmtopen (filterfile, O_RDWR | O_CREAT | O_BINARY,
 		MODE_RW, rsh_command_option);
   if (fd_header < 0)
-    open_fatal(headerfile);
+    open_fatal(filterfile);
 
   blocksum = 0;
   headernum = 0;
@@ -224,6 +223,16 @@ filter_init (void)
 void
 filter_finish(void)
 {
+  /* write two zero blocks as the end of tar */
+  union block * block = xmalloc(BLOCKSIZE);
+  memset(block->buffer, 0, BLOCKSIZE);
+  int writtenbytes = 0;
+  for(int i = 0; i < MIGRATORY_HEADER_BLOCK_NUM; i++) {
+		if ( (writtenbytes = blocking_write (fd_header, block->buffer, BLOCKSIZE)) != BLOCKSIZE)
+			  write_error_details("outputfile", writtenbytes, BLOCKSIZE);
+  }
+  free(block);
+
   /* Close file descriptors for header and content files */
   if (rmtclose (fd_header) != 0)
     close_error("header file descriptor close");
