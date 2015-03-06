@@ -25,7 +25,7 @@
 #include <quotearg.h>
 
 #include "common.h"
-
+#include <rmt.h>
 union block *current_header;	/* points to current archive header */
 enum archive_format current_format; /* recognized format */
 union block *recent_long_name;	/* recent long name header and contents */
@@ -37,6 +37,8 @@ extern int fd_header;	/* file descriptor for writing header blocks during migrat
 						/* defined in migrate.c, to write LONGLINK/LONGNAME header blocks */
 extern int fd_restore;	/* file descriptor for writing header blocks during restore */
 						/* defined in restore.c, to write LONGLINK/LONGNAME header blocks */
+extern int fd_nopad;	/* file descriptor for writing header blocks when removing padings */
+						/* defined in filter.c, to write LONGLINK/LONGNAME header blocks */
 
 #define GID_FROM_HEADER(where) gid_from_header (where, sizeof (where))
 #define MAJOR_FROM_HEADER(where) major_from_header (where, sizeof (where))
@@ -145,25 +147,33 @@ read_and (void (*do_something) (void))
   enum read_header status = HEADER_STILL_UNREAD;
   enum read_header prev_status;
   struct timespec mtime;
-  unsigned long long headercounter = 0;
+  unsigned long long headercounter = 0, i;
 
   base64_init ();
   name_gather ();
 
   open_archive (ACCESS_READ);
 
-  // skip the first two migratory header blocks for restore
+  // seek to the first header block for restore
   if (subcommand_option == RESTORE_SUBCOMMAND) {
-	  fprintf(stdlis, "read_and: headernum=%llu\n", headernum);
-	  int i = 0;
-	  union block *header = find_next_block ();
-	  set_next_block_after(header);
-	  header = find_next_block();
-	  set_next_block_after(header);
+
+	  off_t prev_offset = rmtlseek (archive, 0, SEEK_CUR);
+	  printf("prev_offset=%jd\n", prev_offset);
+	  off_t length = rmtlseek(archive, 0, SEEK_END);
+	  rmtlseek(archive, prev_offset, SEEK_SET);
+
+	  unsigned long long blocks= length/BLOCKSIZE - headernum;
+	  printf("skip %llu blocks\n", blocks);
+	  for(i=0; i< blocks; i++) {
+		  union block *header = find_next_block();
+		  set_next_block_after(header);
+	  }
+	  printf( "current block ordinal: %jd \n", current_block_ordinal());
   }
 
   do
     {
+	  // If it is a restore, we stop only we have process all header blocks.
       if(subcommand_option == RESTORE_SUBCOMMAND && headercounter >= headernum)
     	  break;
 
@@ -479,12 +489,19 @@ read_header (union block **return_block, struct tar_stat_info *info,
 	    		  write_error_details("header file", written2, BLOCKSIZE);
 	    	  headernum ++;
 	      }
-	      /* for RESTORE_COMMAND, write this header block to fd_header */
+	      /* for RESTORE_COMMAND, write this header block to fd_restore */
 	      if (subcommand_option == RESTORE_SUBCOMMAND) {
 	    	  int written2 = blocking_write(fd_restore, header_copy->buffer, BLOCKSIZE);
 	    	  if (written2 != BLOCKSIZE)
 	    		  write_error_details("restore file", written2, BLOCKSIZE);
 	    	  headernum --;
+	      }
+	      /* for FILTER_COMMAND, write this header block to fd_restore */
+	      if (subcommand_option == FILTER_SUBCOMMAND) {
+	    	  int written2 = blocking_write(fd_nopad, header_copy->buffer, BLOCKSIZE);
+	    	  if (written2 != BLOCKSIZE)
+	    		  write_error_details("nopad file", written2, BLOCKSIZE);
+	    	  headernum ++;
 	      }
 
 	      for (size -= BLOCKSIZE; size > 0; size -= written)
@@ -511,12 +528,19 @@ read_header (union block **return_block, struct tar_stat_info *info,
 				  write_error_details("header file", written2, BLOCKSIZE);
 			  headernum ++;
 		  }
-		  /* for RESTORE_COMMAND, write this file name block to fd_header */
+		  /* for RESTORE_COMMAND, write this file name block to fd_restore */
 		  if (subcommand_option == RESTORE_SUBCOMMAND) {
 			  int written2 = blocking_write(fd_restore, data_block->buffer, BLOCKSIZE);
 			  if (written2 != BLOCKSIZE)
 				  write_error_details("restore file", written2, BLOCKSIZE);
 			  headernum --;
+		  }
+		  /* for FILTER_COMMAND, write this file name block to fd_nopad */
+		  if (subcommand_option == FILTER_SUBCOMMAND) {
+			  int written2 = blocking_write(fd_nopad, data_block->buffer, BLOCKSIZE);
+			  if (written2 != BLOCKSIZE)
+				  write_error_details("nopad file", written2, BLOCKSIZE);
+			  headernum ++;
 		  }
 		}
 

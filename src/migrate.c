@@ -204,7 +204,7 @@ migrate_init (void)
   
   /* Open file descriptors for header and content files */
   sprintf(headerfile, "%s.%s", archive_name_array[0], HEADER_POSTFIX);
-  sprintf(contentfile, "%s.%s", archive_name_array[0], CONTENT_POSTFIX);
+  sprintf(contentfile, "%s.%s", archive_name_array[0], MIGRATORY_POSTFIX);
   if (verbose_option) 
     {
       fprintf(stdlis, "migrate_init:\n");  
@@ -220,6 +220,12 @@ migrate_init (void)
 		MODE_RW, rsh_command_option);
   if (fd_content < 0)
     open_fatal(contentfile);
+
+  // skip the first two blocks in the content file. These two blocks are reserved for storing super block.
+  off_t datablockoffset = BLOCKSIZE * MIGRATORY_HEADER_BLOCK_NUM;
+  if (rmtlseek(fd_content, datablockoffset, SEEK_SET) != datablockoffset)
+	  seek_error_details("mtar", datablockoffset);
+
   blocksum = 0;
   headernum = 0;
 }
@@ -253,39 +259,34 @@ void copy_data(char input[NAME_MAX], int outputfd, unsigned long long blocks)
 
 void create_migratory_tar(void)
 {
-  char migratoryfile[NAME_MAX], headerfile[NAME_MAX], contentfile[NAME_MAX];
-  sprintf(migratoryfile, "%s.%s", archive_name_array[0], MIGRATORY_POSTFIX);
-  int fd = rmtopen (migratoryfile, O_RDWR | O_CREAT | O_BINARY, 
-		MODE_RW, rsh_command_option);
-  if (fd < 0)
-    open_fatal(migratoryfile);
+  char headerfile[NAME_MAX];
+  if (rmtlseek(fd_content, 0, SEEK_SET) != 0)
+	  seek_error_details("mtar", 0);
 
   union block *migratory_header = xmalloc(BLOCKSIZE);
   migratory_header->migratory_header.headernum = headernum;
   migratory_header->migratory_header.blocksum = blocksum;
 
-  int count = blocking_write (fd, migratory_header, BLOCKSIZE);
+  int count = blocking_write (fd_content, migratory_header, BLOCKSIZE);
   if (count != BLOCKSIZE)
-    write_error_details(migratoryfile, count, BLOCKSIZE);
+    write_error_details("mtar", count, BLOCKSIZE);
 
   /* write two blocks, to get the same size as normal tar... */
-  count = blocking_write (fd, migratory_header, BLOCKSIZE);
+  count = blocking_write (fd_content, migratory_header, BLOCKSIZE);
   if (count != BLOCKSIZE)
-    write_error_details(migratoryfile, count, BLOCKSIZE);
+    write_error_details("mtar", count, BLOCKSIZE);
    
   free(migratory_header);
 
+  // seek to the end of data blocks
+  off_t metadataoff = BLOCKSIZE * (MIGRATORY_HEADER_BLOCK_NUM + blocksum);
+  if (rmtlseek(fd_content, metadataoff, SEEK_SET) != metadataoff)
+	  seek_error_details("mtar", metadataoff);
+
   /* open header file and copy all header blocks into migratory tar file */
   sprintf(headerfile, "%s.%s", archive_name_array[0], HEADER_POSTFIX);
-  copy_data(headerfile, fd, headernum);  
+  copy_data(headerfile, fd_content, headernum);
 
-  /* open content file and copy all data blocks into migrate tar file */
-  sprintf(contentfile, "%s.%s", archive_name_array[0], CONTENT_POSTFIX);
-  copy_data(contentfile, fd, blocksum);  
-
-  /* close migratory tar file */
-  if (rmtclose (fd) != 0 )
-    close_error("migratory tar file close");
 }
 /*  Finish a migration of an archive file */
 void
@@ -295,19 +296,17 @@ migrate_finish(void)
   /* Close file descriptors for header and content files */
   if (rmtclose (fd_header) != 0)
     close_error("header file descriptor close");
-  if (rmtclose (fd_content) != 0)
-    close_error("content file descriptor close");
   fprintf(stdlis, "migrate_finish: \n");
   fprintf(stdlis, "  data blocks  : %llu\n", blocksum);
   fprintf(stdlis, "  header blocks: %llu\n", headernum);
   fflush(stdlis);
 
   create_migratory_tar();
+  if (rmtclose (fd_content) != 0)
+     close_error("content file descriptor close");
 
   sprintf(headerfile, "%s.%s", archive_name_array[0], HEADER_POSTFIX);
   remove(headerfile);
-  sprintf(contentfile, "%s.%s", archive_name_array[0], CONTENT_POSTFIX);
-  remove(contentfile);
 }
 
 /* Use fchmod if possible, fchmodat otherwise.  */

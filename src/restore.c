@@ -250,7 +250,7 @@ restore_init (void)
   free(migratoryheader);
 
   /* seek to the start offset of data blocks */
-  off_t datablockoffset = BLOCKSIZE * (headernum + MIGRATORY_HEADER_BLOCK_NUM);
+  off_t datablockoffset = BLOCKSIZE * MIGRATORY_HEADER_BLOCK_NUM;
   if (rmtlseek(inputfd, datablockoffset, SEEK_SET) != datablockoffset)
 	  seek_error_details(migratoryfile, datablockoffset);
 }
