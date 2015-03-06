@@ -157,18 +157,23 @@ read_and (void (*do_something) (void))
   // seek to the first header block for restore
   if (subcommand_option == RESTORE_SUBCOMMAND) {
 
-	  off_t prev_offset = rmtlseek (archive, 0, SEEK_CUR);
-	  printf("prev_offset=%jd\n", prev_offset);
 	  off_t length = rmtlseek(archive, 0, SEEK_END);
-	  rmtlseek(archive, prev_offset, SEEK_SET);
+	  off_t metadata_off = length - headernum * BLOCKSIZE;
+	  unsigned long long record_id = metadata_off / record_size;
+	  off_t record_off = record_id * record_size;
+	  if( rmtlseek(archive, record_off, SEEK_SET) != record_off)
+		  seek_error_details("mtar", record_off);
 
-	  unsigned long long blocks= length/BLOCKSIZE - headernum;
-	  printf("skip %llu blocks\n", blocks);
-	  for(i=0; i< blocks; i++) {
+	  // load data into buffer
+	  flush_archive();
+
+	  int block_off = (metadata_off - record_off)/BLOCKSIZE;
+	  //printf("skip %d blocks\n", block_off);
+	  for(i=0; i< block_off; i++) {
 		  union block *header = find_next_block();
 		  set_next_block_after(header);
 	  }
-	  printf( "current block ordinal: %jd \n", current_block_ordinal());
+	  //printf( "current block ordinal: %jd \n", current_block_ordinal());
   }
 
   do
