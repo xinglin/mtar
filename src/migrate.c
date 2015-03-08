@@ -260,6 +260,17 @@ void copy_data(char input[NAME_MAX], int outputfd, unsigned long long blocks)
 void create_migratory_tar(void)
 {
   char headerfile[NAME_MAX];
+
+  // seek to the end of data blocks
+  //off_t metadataoff = BLOCKSIZE * (MIGRATORY_HEADER_BLOCK_NUM + blocksum);
+  //if (rmtlseek(fd_content, metadataoff, SEEK_SET) != metadataoff)
+	//  seek_error_details("mtar", metadataoff);
+
+  /* open header file and copy all header blocks into migratory tar file */
+  sprintf(headerfile, "%s.%s", archive_name_array[0], HEADER_POSTFIX);
+  copy_data(headerfile, fd_content, headernum);
+
+  // seek to the beginnig, to write the super block
   if (rmtlseek(fd_content, 0, SEEK_SET) != 0)
 	  seek_error_details("mtar", 0);
 
@@ -277,16 +288,6 @@ void create_migratory_tar(void)
     write_error_details("mtar", count, BLOCKSIZE);
    
   free(migratory_header);
-
-  // seek to the end of data blocks
-  off_t metadataoff = BLOCKSIZE * (MIGRATORY_HEADER_BLOCK_NUM + blocksum);
-  if (rmtlseek(fd_content, metadataoff, SEEK_SET) != metadataoff)
-	  seek_error_details("mtar", metadataoff);
-
-  /* open header file and copy all header blocks into migratory tar file */
-  sprintf(headerfile, "%s.%s", archive_name_array[0], HEADER_POSTFIX);
-  copy_data(headerfile, fd_content, headernum);
-
 }
 /*  Finish a migration of an archive file */
 void
