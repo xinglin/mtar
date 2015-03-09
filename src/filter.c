@@ -206,7 +206,7 @@ filter_init (void)
   sprintf(filterfile, "%s.%s", archive_name_array[0], FILTER_POSTFIX);
   if (verbose_option) 
     {
-      fprintf(stdlis, "migrate_init:\n");  
+      fprintf(stdlis, "filter_init:\n");
       fprintf(stdlis, "  filterfile=%s\n", filterfile);  
     }
 
@@ -236,7 +236,7 @@ filter_finish(void)
   /* Close file descriptors for header and content files */
   if (rmtclose (fd_nopad) != 0)
     close_error("header file descriptor close");
-  fprintf(stdlis, "migrate_finish: \n");
+  fprintf(stdlis, "filter_finish: \n");
   fprintf(stdlis, "  data blocks  : %llu\n", blocksum);
   fprintf(stdlis, "  header blocks: %llu\n", headernum);
   fflush(stdlis);
