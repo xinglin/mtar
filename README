@@ -1,4 +1,33 @@
 ================================================================================
+This is a modified version of tar that supports transformation between tar 
+and mtar. The tar format wasn't designed with deduplication in mind and
+thus does not deduplicate well. To solve this problem, we propose a 
+new format mtar (short for Migratory tar). One can transform a tar file
+into mtar, by migrating a tar file. An mtar file can be restored into a tar
+file. For more details, please check out our paper (Metadata Considered Harmful ... to Deduplication), published at hotstorage15. 
+
+What has been changed?
+  We added a few files that does the migration and restoration. They are 
+  migrate.c and restore.c, included in the src dir. Both of them are
+  based on extract.c (which implements extraction of a tar file). 
+  migrate.c scans a tar file and outputs data blocks. The header blocks
+  are stored in a temporary file (.h) and then appended to the 
+  output, to build the final mtar file. restore.c works in a similar
+  way but in a reverse direction as migration. It reads the first block
+  of a mtar file, from which it can extract the number of header blocks. 
+  Then, it seeks to the first header block and start to reconstruct 
+  the original tar file, by outputing a header block and then data blocks
+  for the first data file. This process repeats until all header blocks 
+  are processed.  
+
+  In addition, we added filter.c, which removes the padded blocks at the 
+  end of a tar file. Padding was not implemented in migration and restoration.
+
+Support file types
+  We only implement and test migration/restoration for tars which 
+  contain dirs, regular files and symbolic links. We have not tested other 
+  types, such as hard links. 
+
 How to compile it?
      $ ./configure --prefix=/usr/local; make -j12; make install
 
