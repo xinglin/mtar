@@ -1,14 +1,8 @@
 ================================================================================
-How to use it?
-For some reason, you may not be able to compile this source code distribution
-direction. So do the following.
-  - Download vanilla tar 1.27.1 from gnu website
-  - Do a diff between this version and vanilla tar 1.27.1
-  - Apply patch to vanilla tar
-  - Compile
+How to compile it?
+     $ ./configure --prefix=/usr/local; make -j12; make install
 
-migrate.c is based on extract.c implementation. It is invoked
-in the same way as --list.
+How to use it?
 
 First, we need to remove padded bytes in a tar file, since migrate/restore
 does not do padding. 
@@ -29,14 +23,18 @@ To restore a tar file, do
 It will produce a .tar.f file (the original tar-1.27.1.tar.f file will be
 overwritten.)
 
-The restored tar-1.27.1.tar.f should be exactly the same as the tar-1.27.1.tar.fthat is created by migration.
+The restored tar-1.27.1.tar.f should be exactly the same as the 
+tar-1.27.1.tar.fthat is created by migration.
 
 
 NOTE:
-  * blocking-factor: tar writes output in records. Each record is blocking-factor * BLOCKSIZE. By default, 
-    blocking-factor is 10. To get an accurate size comparison between migrated tar and tar, we can set 
-    blocking-factor to be 1 and then the difference between migrated tar and normal tar will be 1024 bytes (
-    tar ends with two 512 blocks). 
+  + migrate.c is based on extract.c implementation. It is invoked
+    in the same way as --list.
+  + blocking-factor: tar writes output in records. Each record is 
+    blocking-factor * BLOCKSIZE. By default, blocking-factor is 10. 
+    To get an accurate size comparison between migrated tar and tar, we can set 
+    blocking-factor to be 1 and then the difference between migrated tar and 
+    normal tar will be 1024 bytes (tar ends with two 512 blocks). 
 
    $ tar c -b 1 -f test.tar test
  
