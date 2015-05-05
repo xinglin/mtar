@@ -23,7 +23,7 @@ What has been changed?
   In addition, we added filter.c, which removes the padded blocks at the 
   end of a tar file. Padding was not implemented in migration and restoration.
 
-Support file types
+Supported file types
   We only implement and test migration/restoration for tars which 
   contain dirs, regular files and symbolic links. We have not tested other 
   types, such as hard links. 
@@ -33,27 +33,27 @@ How to compile it?
 
 How to use it?
 
-First, we need to remove padded bytes in a tar file, since migrate/restore
-does not do padding. 
+  First, we need to remove padded bytes in a tar file, since migrate/restore
+  does not do padding. 
 
-To remove padded bytes, do
-   $ /usr/local/bin/tar --filter -f tar-1.27.1.tar
+  To remove padded bytes, do
+    $ /usr/local/bin/tar --filter -f tar-1.27.1.tar
 
-It will produce a .tar.f file (.f means filtered)
+  It will produce a .tar.f file (.f means filtered)
 
-To migrate a tar file, do
-   $ /usr/local/bin/tar --migrate -f tar-1.27.1.tar.f
+  To migrate a tar file, do
+    $ /usr/local/bin/tar --migrate -f tar-1.27.1.tar.f
 
-It will produce a .tar.f.m file (tar-1.27.1.tar.f.m).
+  It will produce a .tar.f.m file (tar-1.27.1.tar.f.m).
 
-To restore a tar file, do
-   $ /usr/local/bin/tar --restore -f tar-1.27.1.tar.f.m
+  To restore a tar file, do
+    $ /usr/local/bin/tar --restore -f tar-1.27.1.tar.f.m
 
-It will produce a .tar.f file (the original tar-1.27.1.tar.f file will be
-overwritten.)
+  It will produce a .tar.f file (the original tar-1.27.1.tar.f file will be
+  overwritten.)
 
-The restored tar-1.27.1.tar.f should be exactly the same as the 
-tar-1.27.1.tar.fthat is created by migration.
+  The restored tar-1.27.1.tar.f should be exactly the same as the 
+  tar-1.27.1.tar.fthat is created by migration.
 
 
 NOTE:
