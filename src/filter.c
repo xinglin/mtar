@@ -788,122 +788,6 @@ maybe_recoverable (char *file_name, bool regular, bool *interdir_made)
   errno = e;
   return RECOVER_NO;
 }
-
-/* Restore stat extended attributes (xattr) for FILE_NAME, using information
-   given in *ST.  Restore before extraction because they may affect file layout
-   (e.g. on Lustre distributed parallel filesystem - setting info about how many
-   servers is this file striped over, stripe size, mirror copies, etc.
-   in advance dramatically improves the following  performance of reading and
-   writing a file).  If not restoring permissions, invert the INVERT_PERMISSIONS
-   bits from the file's current permissions.  TYPEFLAG specifies the type of the
-   file.  FILE_CREATED indicates set_xattr has created the file */
-static int
-set_xattr (char const *file_name, struct tar_stat_info const *st,
-           mode_t invert_permissions, char typeflag, int *file_created)
-{
-  int status = 0;
-
-#ifdef HAVE_XATTRS
-  bool interdir_made = false;
-
-  if ((xattrs_option > 0) && st->xattr_map_size)
-    {
-      mode_t mode = current_stat_info.stat.st_mode & MODE_RWX & ~ current_umask;
-
-      do
-        status = mknodat (chdir_fd, file_name, mode ^ invert_permissions, 0);
-      while (status && maybe_recoverable ((char *)file_name, false,
-                                          &interdir_made));
-
-      xattrs_xattrs_set (st, file_name, typeflag, 0);
-      *file_created = 1;
-    }
-#endif
-
-  return(status);
-}
-
-/* Fix the statuses of all directories whose statuses need fixing, and
-   which are not ancestors of FILE_NAME.  If AFTER_LINKS is
-   nonzero, do this for all such directories; otherwise, stop at the
-   first directory that is marked to be fixed up only after delayed
-   links are applied.  */
-static void
-apply_nonancestor_delayed_set_stat (char const *file_name, bool after_links)
-{
-  size_t file_name_len = strlen (file_name);
-  bool check_for_renamed_directories = 0;
-
-  while (delayed_set_stat_head)
-    {
-      struct delayed_set_stat *data = delayed_set_stat_head;
-      bool skip_this_one = 0;
-      struct stat st;
-      mode_t current_mode = data->current_mode;
-      mode_t current_mode_mask = data->current_mode_mask;
-
-      check_for_renamed_directories |= data->after_links;
-
-      if (after_links < data->after_links
-	  || (data->file_name_len < file_name_len
-	      && file_name[data->file_name_len]
-	      && (ISSLASH (file_name[data->file_name_len])
-		  || ISSLASH (file_name[data->file_name_len - 1]))
-	      && memcmp (file_name, data->file_name, data->file_name_len) == 0))
-	break;
-
-      chdir_do (data->change_dir);
-
-      if (check_for_renamed_directories)
-	{
-	  if (fstatat (chdir_fd, data->file_name, &st, data->atflag) != 0)
-	    {
-	      stat_error (data->file_name);
-	      skip_this_one = 1;
-	    }
-	  else
-	    {
-	      current_mode = st.st_mode;
-	      current_mode_mask = ALL_MODE_BITS;
-	      if (! (st.st_dev == data->dev && st.st_ino == data->ino))
-		{
-		  ERROR ((0, 0,
-			  _("%s: Directory renamed before its status could be extracted"),
-			  quotearg_colon (data->file_name)));
-		  skip_this_one = 1;
-		}
-	    }
-	}
-
-      if (! skip_this_one)
-	{
-	  struct tar_stat_info sb;
-	  sb.stat.st_mode = data->mode;
-	  sb.stat.st_uid = data->uid;
-	  sb.stat.st_gid = data->gid;
-	  sb.atime = data->atime;
-	  sb.mtime = data->mtime;
-	  sb.cntx_name = data->cntx_name;
-	  sb.acls_a_ptr = data->acls_a_ptr;
-	  sb.acls_a_len = data->acls_a_len;
-	  sb.acls_d_ptr = data->acls_d_ptr;
-	  sb.acls_d_len = data->acls_d_len;
-	  sb.xattr_map = data->xattr_map;
-	  sb.xattr_map_size = data->xattr_map_size;
-	  set_stat (data->file_name, &sb,
-		    -1, current_mode, current_mode_mask,
-		    DIRTYPE, data->interdir, data->atflag);
-	}
-
-      delayed_set_stat_head = data->next;
-      xheader_xattr_free (data->xattr_map, data->xattr_map_size);
-      free (data->cntx_name);
-      free (data->acls_a_ptr);
-      free (data->acls_d_ptr);
-      free (data);
-    }
-}
-
 
 static bool
 is_directory_link (const char *file_name)
@@ -1040,88 +924,10 @@ extract_dir (char *file_name, int typeflag)
 
 
 static int
-open_output_file (char const *file_name, int typeflag, mode_t mode,
-                  int file_created, mode_t *current_mode,
-                  mode_t *current_mode_mask)
-{
-  int fd;
-  bool overwriting_old_files = old_files_option == OVERWRITE_OLD_FILES;
-  int openflag = (O_WRONLY | O_BINARY | O_CLOEXEC | O_NOCTTY | O_NONBLOCK
-		  | O_CREAT
-		  | (overwriting_old_files
-		     ? O_TRUNC | (dereference_option ? 0 : O_NOFOLLOW)
-		     : O_EXCL));
-
-  /* File might be created in set_xattr. So clear O_EXCL to avoid open() fail */
-  if (file_created)
-    openflag = openflag & ~O_EXCL;
-
-  if (typeflag == CONTTYPE)
-    {
-      static int conttype_diagnosed;
-
-      if (!conttype_diagnosed)
-	{
-	  conttype_diagnosed = 1;
-	  WARNOPT (WARN_CONTIGUOUS_CAST,
-		   (0, 0, _("Extracting contiguous files as regular files")));
-	}
-    }
-
-  /* If O_NOFOLLOW is needed but does not work, check for a symlink
-     separately.  There's a race condition, but that cannot be avoided
-     on hosts lacking O_NOFOLLOW.  */
-  if (! HAVE_WORKING_O_NOFOLLOW
-      && overwriting_old_files && ! dereference_option)
-    {
-      struct stat st;
-      if (fstatat (chdir_fd, file_name, &st, AT_SYMLINK_NOFOLLOW) == 0
-	  && S_ISLNK (st.st_mode))
-	{
-	  errno = ELOOP;
-	  return -1;
-	}
-    }
-
-  fd = openat (chdir_fd, file_name, openflag, mode);
-  if (0 <= fd)
-    {
-      if (overwriting_old_files)
-	{
-	  struct stat st;
-	  if (fstat (fd, &st) != 0)
-	    {
-	      int e = errno;
-	      close (fd);
-	      errno = e;
-	      return -1;
-	    }
-	  if (! S_ISREG (st.st_mode))
-	    {
-	      close (fd);
-	      errno = EEXIST;
-	      return -1;
-	    }
-	  *current_mode = st.st_mode;
-	  *current_mode_mask = ALL_MODE_BITS;
-	}
-      else
-	{
-	  *current_mode = mode & ~ current_umask;
-	  *current_mode_mask = MODE_RWX;
-	}
-    }
-
-  return fd;
-}
-
-static int
 migrate_file (char *file_name, int typeflag)
 {
-  int fd;
   off_t size;
   union block *data_block;
-  int status;
   unsigned long blocknum = 0;
   size_t count = 0;
   size_t written;
@@ -1177,7 +983,7 @@ migrate_file (char *file_name, int typeflag)
     }    
 
   mv_end ();
-  return status;
+  return 0;
 }
 
 /* Create a placeholder file with name FILE_NAME, which will be
@@ -1640,87 +1446,4 @@ filter_archive (void)
   else
     skip_member ();
 
-}
-
-/* Extract the links whose final extraction were delayed.  */
-static void
-apply_delayed_links (void)
-{
-  struct delayed_link *ds;
-
-  for (ds = delayed_link_head; ds; )
-    {
-      struct string_list *sources = ds->sources;
-      char const *valid_source = 0;
-      fprintf(stdlis, "apply_delayed_links: src=%s, target=%s\n", sources->string, ds->target);
-      chdir_do (ds->change_dir);
-
-      for (sources = ds->sources; sources; sources = sources->next)
-	{
-	  char const *source = sources->string;
-	  struct stat st;
-
-	  /* Make sure the placeholder file is still there.  If not,
-	     don't create a link, as the placeholder was probably
-	     removed by a later extraction.  */
-	  if (fstatat (chdir_fd, source, &st, AT_SYMLINK_NOFOLLOW) == 0
-	      && st.st_dev == ds->dev
-	      && st.st_ino == ds->ino
-	      && timespec_cmp (get_stat_birthtime (&st), ds->birthtime) == 0)
-	    {
-	      /* Unlink the placeholder, then create a hard link if possible,
-		 a symbolic link otherwise.  */
-	      if (unlinkat (chdir_fd, source, 0) != 0)
-		unlink_error (source);
-	      else if (valid_source
-		       && (linkat (chdir_fd, valid_source, chdir_fd, source, 0)
-			   == 0))
-		;
-	      else if (!ds->is_symlink)
-		{
-		  if (linkat (chdir_fd, ds->target, chdir_fd, source, 0) != 0)
-		    link_error (ds->target, source);
-		}
-	      else if (symlinkat (ds->target, chdir_fd, source) != 0)
-		symlink_error (ds->target, source);
-	      else
-		{
-		  struct tar_stat_info st1;
-		  st1.stat.st_mode = ds->mode;
-		  st1.stat.st_uid = ds->uid;
-		  st1.stat.st_gid = ds->gid;
-		  st1.atime = ds->atime;
-		  st1.mtime = ds->mtime;
-                  st1.cntx_name = ds->cntx_name;
-                  st1.acls_a_ptr = ds->acls_a_ptr;
-                  st1.acls_a_len = ds->acls_a_len;
-                  st1.acls_d_ptr = ds->acls_d_ptr;
-                  st1.acls_d_len = ds->acls_d_len;
-                  st1.xattr_map = ds->xattr_map;
-                  st1.xattr_map_size = ds->xattr_map_size;
-		  set_stat (source, &st1, -1, 0, 0, SYMTYPE,
-			    false, AT_SYMLINK_NOFOLLOW);
-		  valid_source = source;
-		}
-	    }
-	}
-
-      for (sources = ds->sources; sources; )
-	{
-	  struct string_list *next = sources->next;
-	  free (sources);
-	  sources = next;
-	}
-
-   xheader_xattr_free (ds->xattr_map, ds->xattr_map_size);
-   free (ds->cntx_name);
-
-      {
-	struct delayed_link *next = ds->next;
-	free (ds);
-	ds = next;
-      }
-    }
-
-  delayed_link_head = 0;
 }
