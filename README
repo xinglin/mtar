@@ -28,8 +28,11 @@ Supported file types
   contain dirs, regular files and symbolic links. We have not tested other 
   types, such as hard links. 
 
-How to compile it?
+How to compile it in Ubuntu14?
      $ ./configure --prefix=/usr/local; make -j12; make install
+
+If you see errors from -Wstack-protector, you can disable it by passing "CFLAGS=-Wno-error" to make. 
+     $ ./configure --prefix=/usr/local; make -j12 CFLAGS=-Wno-error; make install
 
 How to use it?
 
