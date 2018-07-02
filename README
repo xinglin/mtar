@@ -29,10 +29,11 @@ Supported file types
   types, such as hard links. 
 
 How to compile it in Ubuntu14?
-     $ ./configure --prefix=/usr/local; make -j12; make install
+	If you git clone from my github repository, it will contain a .git dir. This
+will turn on all gcc warnings and treat warnings as errors. To turn it off, we can pass ``--disable-gcc-warnings'' to ./configure.
+ 
+     $ ./configure --disable-gcc-warnings --prefix=/usr/local; make -j12; make install
 
-If you see errors from -Wstack-protector, you can disable it by passing "CFLAGS=-Wno-error" to make. 
-     $ ./configure --prefix=/usr/local; make -j12 CFLAGS=-Wno-error; make install
 
 How to use it?
 
